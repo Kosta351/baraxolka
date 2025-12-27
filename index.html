@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Барахолка | Финал</title>
+    <title>Барахолка | Финальная Версия</title>
     
-    <!-- Фавикон (иконка во вкладке) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>💨</text></svg>">
+    <!-- Иконка во вкладке (Walter White) -->
+    <link rel="icon" type="image/jpeg" href="https://i.imgur.com/o187IAs.jpeg">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -27,7 +27,7 @@
 
         input, select, textarea { 
             background: rgba(255,255,255,0.05) !important; border: 1px solid var(--border) !important; 
-            color: #fff !important; outline: none; border-radius: 20px !important; padding: 12px 18px !important;
+            color: #fff !important; outline: none; border-radius: 20px !important; padding: 14px 20px !important;
             appearance: none;
         }
         option { background: #0a0a0a !important; color: #fff !important; }
@@ -35,19 +35,26 @@
         .nav-item { transition: 0.4s; opacity: 0.4; cursor: pointer; color: var(--text); text-align: center; }
         .nav-item.active { opacity: 1; color: var(--neon); transform: translateY(-5px); }
         
-        .creator-ring { border: 3px solid #ff3366 !important; box-shadow: 0 0 20px rgba(255, 51, 102, 0.3); }
+        .creator-ring { border: 3px solid #ff3366 !important; box-shadow: 0 0 25px rgba(255, 51, 102, 0.4); }
         .avatar-main { border: 2px solid var(--neon); box-shadow: 0 0 15px rgba(0, 255, 170, 0.2); }
         
         [v-cloak] { display: none; }
+        
+        /* ФИКС КОДА РЕГИСТРАЦИИ */
+        .auth-code { 
+            font-size: 14vw; 
+            line-height: 1;
+            letter-spacing: -2px;
+            font-family: 'Unbounded', sans-serif;
+            text-align: center;
+            width: 100%;
+            display: block;
+            margin: 20px 0;
+        }
+        @media (min-width: 768px) { .auth-code { font-size: 5rem; } }
+
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
-
-        /* Адаптация кода регистрации */
-        .auth-code { 
-            font-size: clamp(2rem, 10vw, 4.5rem); 
-            line-height: 1;
-            word-break: break-all;
-        }
     </style>
 </head>
 <body class="pb-36">
@@ -57,26 +64,25 @@
     <!-- 1. AGE GATE -->
     <div v-if="!ageVerified" class="fixed inset-0 z-[2000] bg-[#050505] flex items-center justify-center p-8 text-center">
         <div class="animate__animated animate__zoomIn max-w-xs w-full">
-            <!-- ВШИТАЯ КАРТИНКА (BASE64) -->
-            <img :src="WALTER_IMAGE" class="w-32 h-32 rounded-[3rem] mx-auto mb-8 creator-ring object-cover shadow-2xl">
-            <h1 class="font-brand text-3xl mb-4 text-white italic tracking-tighter uppercase">Барахолка</h1>
-            <p class="text-gray-500 text-sm mb-12">Закрытый доступ.<br>Вам есть 18 лет?</p>
+            <img :src="LOGO_URL" class="w-32 h-32 rounded-[3rem] mx-auto mb-8 creator-ring object-cover">
+            <h1 class="font-brand text-3xl mb-4 text-white italic tracking-tighter">БАРАХОЛКА</h1>
+            <p class="text-gray-500 text-sm mb-12 uppercase tracking-widest font-bold">Вам есть 18 лет?</p>
             <button @click="verifyAge" class="btn-neon w-full py-6 text-sm tracking-widest uppercase font-black">Да, мне есть 18</button>
         </div>
     </div>
 
     <div v-else>
         
-        <!-- Загрузка -->
+        <!-- Loading -->
         <div v-if="loading" class="fixed inset-0 z-[1500] bg-[#050505] flex flex-col items-center justify-center">
             <div class="w-12 h-12 border-4 border-[#00ffaa]/20 border-t-[#00ffaa] rounded-full animate-spin mb-4"></div>
-            <div class="text-[#00ffaa] font-brand italic text-[10px] animate-pulse uppercase tracking-[0.4em]">Загрузка базы...</div>
+            <div class="text-[#00ffaa] font-brand italic text-[10px] animate-pulse">ПОДКЛЮЧЕНИЕ...</div>
         </div>
 
         <!-- Уведомления -->
         <div class="fixed top-6 right-6 z-[1600] space-y-3 max-w-[250px]">
             <transition-group name="animate__animated" enter-active-class="animate__fadeInRight" leave-active-class="animate__fadeOutRight">
-                <div v-for="t in toasts" :key="t.id" class="glass px-6 py-4 rounded-3xl border-l-4 border-[#00ffaa] text-[11px] font-bold shadow-2xl">
+                <div v-for="t in toasts" :key="t.id" class="glass px-6 py-4 rounded-3xl border-l-4 border-[#00ffaa] text-[11px] font-bold shadow-2xl flex items-center gap-3">
                     {{ t.msg }}
                 </div>
             </transition-group>
@@ -86,18 +92,17 @@
         <header class="sticky top-0 z-50 glass border-b px-4 py-4">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div @click="view = 'home'" class="flex items-center gap-3 cursor-pointer">
-                    <img :src="WALTER_IMAGE" class="w-10 h-10 rounded-xl object-cover shadow-lg">
-                    <span class="font-brand text-xl italic tracking-tighter uppercase">БАРАХОЛКА</span>
+                    <img :src="LOGO_URL" class="w-10 h-10 rounded-xl object-cover shadow-lg">
+                    <span class="font-brand text-xl italic tracking-tighter">БАРАХОЛКА</span>
                 </div>
                 <div v-if="user" @click="view = 'profile'" class="w-10 h-10 rounded-xl overflow-hidden avatar-main">
                     <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-full h-full object-cover">
                 </div>
-                <button v-else @click="view = 'auth'" class="text-[#00ffaa] text-[10px] font-black uppercase tracking-widest">Вход</button>
+                <button v-else @click="view = 'auth'" class="text-[#00ffaa] text-xs font-black uppercase tracking-widest">Вход</button>
             </div>
         </header>
 
         <main class="max-w-6xl mx-auto px-4 pt-8">
-            
             <transition name="animate__animated" enter-active-class="animate__fadeIn" mode="out-in">
 
                 <!-- ВИТРИНА -->
@@ -140,10 +145,10 @@
                     </div>
                 </div>
 
-                <!-- КОМАНДНЫЙ ЦЕНТР -->
+                <!-- АДМИНКА -->
                 <div v-else-if="view === 'admin' && isAdmin" class="max-w-4xl mx-auto pb-10 px-2" key="admin">
                     <div class="flex justify-between items-center mb-8">
-                        <h2 class="font-brand text-xl italic text-[#ff3366] tracking-tight uppercase">Командный Центр</h2>
+                        <h2 class="font-brand text-2xl italic text-[#ff3366] tracking-tight uppercase">Командный Центр</h2>
                         <button @click="view = 'profile'" class="text-[10px] glass px-5 py-2 rounded-xl font-black uppercase">Назад</button>
                     </div>
                     <div class="grid grid-cols-1 gap-4">
@@ -154,7 +159,7 @@
                                     <div class="text-base font-black flex items-center gap-2">
                                         {{u.name}} <span v-if="u.has_crown">👑</span><span v-if="u.is_verified">✅</span>
                                     </div>
-                                    <div class="text-[11px] opacity-40 uppercase font-bold">Варны: {{u.strikes || 0}}/3 • ID: {{u.tg_id}}</div>
+                                    <div class="text-[11px] opacity-40 uppercase font-bold tracking-widest">Варны: {{u.strikes || 0}}/3</div>
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-center md:justify-end">
@@ -173,24 +178,24 @@
 
                 <!-- ПРОФИЛЬ -->
                 <div v-else-if="view === 'profile'" class="max-w-2xl mx-auto pb-10" key="profile">
-                    <div v-if="isAdmin" @click="view = 'admin'" class="mb-6 p-6 rounded-[2.5rem] bg-[#ff3366] text-white text-center font-black text-xs uppercase shadow-xl">
+                    <div v-if="isAdmin" @click="view = 'admin'" class="mb-8 p-6 rounded-[2.5rem] bg-[#ff3366] text-white text-center font-black text-xs uppercase shadow-xl cursor-pointer">
                         ОТКРЫТЬ КОМАНДНЫЙ ЦЕНТР
                     </div>
                     <div class="glass p-8 rounded-[4rem] text-center border-t-8 border-[#00ffaa] shadow-2xl relative">
                         <div class="relative inline-block mb-8">
-                            <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-40 h-40 rounded-[3.5rem] object-cover ring-4 ring-[#00ffaa]/20">
+                            <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-40 h-40 rounded-[3.5rem] object-cover ring-4 ring-[#00ffaa]/20 shadow-xl">
                             <label class="absolute -bottom-2 -right-2 w-12 h-12 bg-[#00ffaa] rounded-2xl flex items-center justify-center cursor-pointer shadow-xl border-4 border-[#050505]">
                                 <span class="text-xl">📸</span>
                                 <input type="file" @change="handleAvatarUpload" class="hidden">
                             </label>
                         </div>
                         <div v-if="!editingProfile" class="mb-8">
-                            <h3 class="text-3xl font-black italic uppercase flex items-center justify-center gap-3">
+                            <h3 class="text-3xl font-black italic uppercase tracking-tighter flex items-center justify-center gap-3">
                                 {{user.name}} <span v-if="user.has_crown">👑</span><span v-if="user.is_verified">✅</span>
                             </h3>
-                            <button @click="editingProfile = true" class="text-[#00ffaa] text-[10px] font-bold uppercase tracking-widest mt-3 underline decoration-white/20">Сменить ник</button>
+                            <button @click="editingProfile = true" class="text-[#00ffaa] text-[10px] font-bold uppercase tracking-widest mt-3">Сменить ник</button>
                         </div>
-                        <div v-else class="mb-8 space-y-4 max-w-xs mx-auto">
+                        <div v-else class="mb-8 space-y-4 max-w-xs mx-auto text-center">
                             <input v-model="editName" type="text" class="w-full text-center text-base font-bold glass">
                             <div class="flex gap-2">
                                 <button @click="updateProfile" class="btn-neon flex-1 py-4 text-[10px] font-black">ОК</button>
@@ -204,42 +209,44 @@
                         <button @click="logout" class="text-red-500 font-black uppercase text-[10px] tracking-widest opacity-50">Выход</button>
                     </div>
                     <div class="mt-12 space-y-4">
-                        <div v-if="profileTab === 'my'" class="space-y-4 animate__animated animate__fadeIn">
+                        <div v-if="profileTab === 'my'" class="space-y-4">
                             <div v-for="item in myItems" :key="item.id" class="glass p-5 rounded-[2.5rem] flex items-center justify-between">
                                 <div class="flex items-center gap-6">
                                     <img :src="item.img" class="w-16 h-16 rounded-2xl object-cover shadow-xl">
                                     <div>
-                                        <h4 class="text-sm font-extrabold uppercase">{{item.title}}</h4>
+                                        <h4 class="text-sm font-extrabold uppercase tracking-tight">{{item.title}}</h4>
                                         <span class="text-xs font-brand text-[#00ffaa]">{{item.price}} ₽</span>
                                     </div>
                                 </div>
                                 <button @click="deleteItem(item.id)" class="text-red-500 font-black text-xs px-4">УДАЛИТЬ</button>
                             </div>
+                            <div v-if="myItems.length === 0" class="text-center opacity-20 py-10 italic">Пусто</div>
                         </div>
-                        <div v-else class="grid grid-cols-2 gap-4 animate__animated animate__fadeIn">
+                        <div v-else class="grid grid-cols-2 gap-4">
                             <div v-for="item in favoriteItems" :key="item.id" @click="openItem(item)" class="glass p-3 rounded-[2rem] text-center relative">
                                 <img :src="item.img" class="w-full aspect-square rounded-2xl object-cover mb-2">
                                 <div class="text-[10px] font-extrabold uppercase truncate">{{item.title}}</div>
                                 <button @click.stop="toggleFavorite(item.id)" class="mt-2 text-red-500 text-[10px] font-black uppercase">УБРАТЬ ❤️</button>
                             </div>
+                            <div v-if="favoriteItems.length === 0" class="col-span-2 text-center opacity-20 py-10 italic">Пусто</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ДОБАВЛЕНИЕ -->
+                <!-- ДОБАВЛЕНИЕ ЛОТА -->
                 <div v-else-if="view === 'add'" class="max-w-xl mx-auto pb-10" key="add">
-                    <div class="glass p-8 rounded-[4.5rem] shadow-2xl border-t-8 border-[#00ffaa]">
+                    <div class="glass p-12 rounded-[4.5rem] shadow-2xl border-t-8 border-[#00ffaa]">
                         <h2 class="font-brand text-2xl mb-12 italic text-center uppercase tracking-tighter">Новый лот</h2>
                         <div class="space-y-6">
-                            <div @click="$refs.fileInput.click()" class="h-72 glass rounded-[3.5rem] border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer overflow-hidden group">
+                            <div @click="$refs.fileInput.click()" class="h-72 glass rounded-[3.5rem] border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer overflow-hidden group transition-all hover:border-[#00ffaa]/50">
                                 <img v-if="newItem.img" :src="newItem.img" class="w-full h-full object-cover">
                                 <div v-else class="text-center opacity-30">
                                     <span class="text-5xl mb-4 block">📸</span>
                                     <span class="text-[10px] font-black uppercase tracking-widest">Выбрать фото</span>
                                 </div>
-                                <input type="file" ref="fileInput" @change="handleFileUpload" class="hidden" accept="image/*">
+                                <input type="file" ref="fileInput" @change="handleFileUpload" class="hidden">
                             </div>
-                            <input v-model="newItem.title" type="text" placeholder="Название (Geekvape, Xros...)">
+                            <input v-model="newItem.title" type="text" placeholder="Название товара">
                             <div class="grid grid-cols-2 gap-5">
                                 <select v-model="newItem.category" class="glass font-bold text-xs">
                                     <option v-for="c in categories.slice(1)" :value="c">{{c}}</option>
@@ -247,19 +254,19 @@
                                 <input v-model.number="newItem.price" type="number" placeholder="Цена ₽">
                             </div>
                             <input v-model="newItem.city" type="text" placeholder="Твой город">
-                            <input v-model="newItem.tg_user" type="text" placeholder="Ник в Telegram без @">
+                            <input v-model="newItem.tg_user" type="text" placeholder="Твой ник Telegram без @">
                             <textarea v-model="newItem.desc_text" placeholder="Описание..." class="h-44"></textarea>
-                            <button @click="createListing" class="btn-neon w-full py-7 rounded-[2.5rem] text-[11px] font-black uppercase tracking-widest shadow-xl">Опубликовать</button>
+                            <button @click="createListing" class="btn-neon w-full py-7 rounded-[2.5rem] text-[11px] font-black shadow-xl uppercase tracking-widest">Опубликовать</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- ПОДРОБНЕЕ -->
+                <!-- ПРОДУКТ ПОДРОБНО -->
                 <div v-else-if="view === 'product' && selectedItem" class="max-w-5xl mx-auto pb-10 px-2" key="product">
-                    <button @click="view = 'home'" class="mb-10 text-[10px] font-black text-gray-500 uppercase flex items-center gap-3"><span>←</span> На витрину</button>
+                    <button @click="view = 'home'" class="mb-10 text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-white transition-all flex items-center gap-3"><span>←</span> Назад</button>
                     <div class="flex flex-col md:flex-row gap-16 items-start">
                         <div class="flex-1 w-full relative">
-                            <img :src="selectedItem.img" class="w-full aspect-square object-cover rounded-[4rem] shadow-2xl ring-1 ring-white/10">
+                            <img :src="selectedItem.img" class="w-full aspect-square object-cover rounded-[4rem] shadow-2xl ring-1 ring-white/10" :class="{'grayscale opacity-40': selectedItem.status === 'sold'}">
                             <div v-if="selectedItem.status === 'sold'" class="absolute inset-0 flex items-center justify-center bg-black/60 rounded-[4rem]">
                                 <span class="font-brand text-4xl text-red-500 -rotate-12 border-4 border-red-500 px-8 py-3 rounded-2xl uppercase font-black">ПРОДАНО</span>
                             </div>
@@ -273,12 +280,12 @@
                             <div class="text-4xl font-brand text-[#00ffaa] mb-12 neon-text">{{selectedItem.price}} ₽</div>
                             <div class="glass p-8 rounded-[3rem] mb-12 flex items-center justify-between border-l-8 border-[#00ffaa] shadow-2xl">
                                 <div class="flex items-center gap-5">
-                                    <img :src="getSellerAvatar(selectedItem.user_id)" class="w-16 h-16 rounded-[1.5rem] object-cover">
+                                    <img :src="getSellerAvatar(selectedItem.user_id)" class="w-16 h-16 rounded-[1.5rem] object-cover ring-2 ring-white/5">
                                     <div class="text-sm font-black uppercase italic tracking-tight">{{selectedItem.seller_name}} <span v-if="getUserCrown(selectedItem.user_id)">👑</span></div>
                                 </div>
                             </div>
                             <p class="text-base text-gray-400 leading-relaxed italic mb-12 opacity-80 font-medium">{{selectedItem.desc_text}}</p>
-                            <button @click="contactSeller" :disabled="selectedItem.status === 'sold'" class="btn-neon w-full py-8 rounded-[3rem] text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl">Связаться в Telegram</button>
+                            <button @click="contactSeller" :disabled="selectedItem.status === 'sold'" class="btn-neon w-full py-8 rounded-[3rem] text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl">Связаться в ТГ</button>
                         </div>
                     </div>
                 </div>
@@ -287,17 +294,16 @@
                 <div v-else-if="view === 'auth'" class="max-w-md mx-auto py-20 text-center px-4" key="auth">
                     <div class="glass p-14 rounded-[5rem] border-b-8 border-sky-500 shadow-2xl">
                         <h2 class="font-brand text-3xl mb-4 italic uppercase tracking-tighter leading-none">Вход</h2>
-                        <p class="text-[10px] text-gray-500 mb-14 uppercase tracking-[0.3em] font-black opacity-60">Identity Sync</p>
                         <div v-if="authStep === 'input'" class="space-y-8">
-                            <input v-model="auth.name" type="text" placeholder="Введите ник для сайта" class="w-full text-center text-sm font-bold glass">
-                            <button @click="startAuth" class="btn-neon w-full py-7 rounded-[3rem] text-xs font-black uppercase tracking-widest">Продолжить</button>
+                            <input v-model="auth.name" type="text" placeholder="Имя на сайте" class="w-full text-center text-sm font-bold glass">
+                            <button @click="startAuth" class="btn-neon w-full py-7 rounded-[3rem] text-xs font-black">ПРОДОЛЖИТЬ</button>
                         </div>
                         <div v-else class="space-y-10 animate__animated animate__fadeIn">
                             <div class="bg-white/5 p-10 rounded-[4rem] border border-sky-500/20 shadow-inner">
-                                <div class="auth-code font-brand text-white mb-8 tracking-tighter neon-text">{{verifyCode}}</div>
+                                <div class="auth-code neon-text">{{verifyCode}}</div>
                                 <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest leading-relaxed">Отправь код боту: <br> <span class="text-sky-400">@your_vape_bot</span></p>
                             </div>
-                            <a href="https://t.me/your_vape_bot" target="_blank" class="block w-full py-7 rounded-[3rem] bg-sky-600 text-white font-black text-xs uppercase shadow-2xl hover:scale-105 transition-all">Открыть Telegram</a>
+                            <a href="https://t.me/your_vape_bot" target="_blank" class="block w-full py-7 rounded-[3rem] bg-sky-600 text-white font-black text-xs shadow-2xl">В ТЕЛЕГРАМ</a>
                         </div>
                     </div>
                 </div>
@@ -309,15 +315,15 @@
         <nav class="fixed bottom-8 inset-x-8 glass px-10 py-6 flex justify-between rounded-[3.5rem] max-w-lg mx-auto shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl border border-white/10 z-[100]">
             <button @click="view = 'home'" :class="{active: view === 'home'}" class="nav-item flex flex-col items-center gap-1">
                 <span class="text-2xl">🏠</span>
-                <span class="text-[8px] font-black uppercase tracking-widest">Витрина</span>
+                <span class="text-[9px] font-black uppercase tracking-widest">Витрина</span>
             </button>
             <button @click="user ? view = 'add' : view = 'auth'" :class="{active: view === 'add'}" class="nav-item flex flex-col items-center gap-1">
                 <span class="text-2xl">➕</span>
-                <span class="text-[8px] font-black uppercase tracking-widest">Продать</span>
+                <span class="text-[9px] font-black uppercase tracking-widest">Продать</span>
             </button>
             <button @click="user ? (view = 'profile' || view === 'admin') : view = 'auth'" :class="{active: view === 'profile' || view === 'admin'}" class="nav-item flex flex-col items-center gap-1">
                 <span class="text-2xl">👤</span>
-                <span class="text-[8px] font-black uppercase tracking-widest">Кабинет</span>
+                <span class="text-[9px] font-black uppercase tracking-widest">Профиль</span>
             </button>
         </nav>
     </div>
@@ -332,15 +338,15 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const MASTER_ADMIN_ID = 1735153058; // ТВОЙ ID
 const BOT_TOKEN = '7688454041:AAFFBc0Ye7RRq0RFuSst_QfTqQ0TpQu9aWI';
 
-// ВШИТАЯ АВАТАРКА УОЛТЕРА (BASE64) - ТЕПЕРЬ ОНА НИКОГДА НЕ ПРОПАДЕТ
-const WALTER_IMAGE = "data:image/jpeg;base64,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";
+// ССЫЛКА НА ЛОГОТИП С ИМГУРА
+const LOGO_URL = 'https://i.imgur.com/o187IAs.jpeg';
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 createApp({
     data() {
         return {
-            WALTER_IMAGE: WALTER_IMAGE, LOGO_URL: WALTER_IMAGE, theme: 'dark',
+            LOGO_URL: LOGO_URL, theme: 'dark',
             ageVerified: localStorage.getItem('vb_age_v27') === 'true',
             loading: true, view: 'home', profileTab: 'my',
             user: JSON.parse(localStorage.getItem('vb_cloud_v27')) || null,
@@ -382,7 +388,7 @@ createApp({
         notify(msg) {
             const id = Date.now();
             this.toasts.push({ id, msg });
-            setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 3000);
+            setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 3500);
         },
         async verifyAge() { this.ageVerified = true; localStorage.setItem('vb_age_v27', 'true'); await this.initApp(); },
         async fetchData() {
@@ -395,7 +401,7 @@ createApp({
                     this.user = updated; 
                     if (this.isCreator && updated.strikes > 0) await client.from('users').update({ strikes: 0 }).eq('tg_id', MASTER_ADMIN_ID);
                     localStorage.setItem('vb_cloud_v27', JSON.stringify(this.user)); 
-                    if (updated.is_banned) { this.logout(); this.notify('Доступ закрыт ❌'); }
+                    if (updated.is_banned) { this.logout(); this.notify('Доступ заблокирован ❌'); }
                 }
             }
         },
@@ -467,7 +473,7 @@ createApp({
         async removeStrike(u) { await client.from('users').update({ strikes: Math.max(0, (u.strikes || 0) - 1) }).eq('id', u.id); this.notify('Снято'); },
         async banUser(u) { await client.from('users').update({ is_banned: !u.is_banned, strikes: 0 }).eq('id', u.id); this.notify('Бан обновлен'); },
         openItem(item) { this.selectedItem = item; this.view = 'product'; window.scrollTo(0,0); },
-        contactSeller() { window.open(`https://t.me/${this.selectedItem.tg_user.replace('@', '')}`, '_blank'); },
+        contactSeller() { this.contactRevealed = true; setTimeout(() => window.open(`https://t.me/${this.selectedItem.tg_user.replace('@', '')}`, '_blank'), 800); },
         handleFileUpload(e) {
             const reader = new FileReader();
             reader.onload = (f) => this.newItem.img = f.target.result;
