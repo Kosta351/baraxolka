@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Барахолка | Система Наказаний</title>
+    <title>Барахолка | GOD MODE</title>
     
-    <!-- Иконка B -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2300ffaa%22/><text y=%22.85em%22 x=%2250%%22 font-size=%2270%22 font-weight=%22900%22 text-anchor=%22middle%22 font-family=%22Arial%22 fill=%22black%22>B</text></svg>">
+    <!-- Иконка Walter White (Imgur) -->
+    <link rel="icon" type="image/jpeg" href="https://i.imgur.com/o187IAs.jpeg">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -29,6 +29,7 @@
             background: rgba(255,255,255,0.05) !important; border: 1px solid var(--border) !important; 
             color: #fff !important; outline: none; border-radius: 20px !important; padding: 14px 20px !important;
         }
+        option { background: #0a0a0a !important; color: #fff !important; }
 
         .nav-item { transition: 0.4s; opacity: 0.4; cursor: pointer; color: var(--text); text-align: center; }
         .nav-item.active { opacity: 1; color: var(--neon); transform: translateY(-5px); }
@@ -38,9 +39,24 @@
         
         [v-cloak] { display: none; }
         
-        .auth-code-box {
-            font-size: clamp(2rem, 12vw, 4.5rem); font-weight: 900; letter-spacing: 4px; color: #fff;
-            text-shadow: 0 0 20px var(--neon); background: rgba(255,255,255,0.03); border-radius: 24px; padding: 20px; width: 100%; text-align: center;
+        /* ФИКС КОДА РЕГИСТРАЦИИ */
+        .auth-code-container {
+            background: rgba(255,255,255,0.03);
+            border-radius: 30px;
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        .auth-code-text {
+            font-size: clamp(2rem, 12vw, 4.5rem);
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 20px var(--neon);
+            letter-spacing: 2px;
+            font-family: 'Unbounded', sans-serif;
         }
 
         ::-webkit-scrollbar { width: 4px; }
@@ -54,53 +70,52 @@
     <!-- 1. AGE GATE -->
     <div v-if="!ageVerified" class="fixed inset-0 z-[2000] bg-[#050505] flex items-center justify-center p-8 text-center">
         <div class="animate__animated animate__zoomIn max-w-xs w-full">
-            <div class="w-24 h-24 bg-[#00ffaa] rounded-3xl mx-auto mb-8 flex items-center justify-center text-black text-5xl font-black shadow-[0_0_40px_rgba(0,255,170,0.4)]">B</div>
+            <img :src="LOGO_URL" class="w-32 h-32 rounded-[3rem] mx-auto mb-8 creator-ring object-cover shadow-2xl">
             <h1 class="font-brand text-3xl mb-4 text-white italic tracking-tighter uppercase">Барахолка</h1>
-            <p class="text-gray-500 text-sm mb-12 uppercase font-bold">Вам есть 18 лет?</p>
-            <button @click="verifyAge" class="btn-neon w-full py-6 text-sm tracking-widest uppercase font-black">Да, мне есть 18</button>
+            <p class="text-gray-500 text-sm mb-12">Вам исполнилось 18 лет?</p>
+            <button @click="verifyAge" class="btn-neon w-full py-6 text-sm tracking-widest uppercase font-black">Мне есть 18 лет</button>
         </div>
     </div>
 
     <div v-else>
         
-        <!-- 2. WARNING MODAL (ОПОВЕЩЕНИЕ О ВАРНЕ) -->
-        <div v-if="user && user.strikes > 0 && !strikeNoticeClosed" class="fixed inset-0 z-[1800] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 text-center">
-            <div class="glass p-8 rounded-[3rem] border-red-500/50 max-w-sm w-full animate__animated animate__shakeX">
-                <div class="text-5xl mb-4 text-red-500">⚠️</div>
-                <h2 class="font-brand text-xl text-red-500 mb-2 uppercase">Предупреждение</h2>
-                <p class="text-white text-lg font-black mb-4">Варны: {{user.strikes}} / 3</p>
-                <div class="bg-red-500/10 p-4 rounded-2xl mb-8">
-                    <p class="text-[10px] text-red-400 uppercase font-bold mb-1">Причина последнего варна:</p>
-                    <p class="text-sm italic text-gray-200">"{{user.strike_reason || 'Не указана'}}"</p>
-                </div>
-                <button @click="strikeNoticeClosed = true" class="w-full py-4 glass rounded-2xl text-[10px] font-black uppercase">Я всё понял</button>
-                <p class="mt-4 text-[9px] text-gray-500 uppercase">Помни: на 3-м варне доступ будет закрыт навсегда.</p>
-            </div>
-        </div>
-
-        <!-- Loading -->
+        <!-- Загрузка -->
         <div v-if="loading" class="fixed inset-0 z-[1500] bg-[#050505] flex flex-col items-center justify-center">
             <div class="w-12 h-12 border-4 border-[#00ffaa]/20 border-t-[#00ffaa] rounded-full animate-spin mb-4"></div>
-            <div class="text-[#00ffaa] font-brand italic text-[10px] animate-pulse uppercase tracking-[0.4em]">Связь с облаком...</div>
+            <div class="text-[#00ffaa] font-brand italic text-[10px] animate-pulse">СИНХРОНИЗАЦИЯ...</div>
         </div>
 
         <!-- Уведомления -->
         <div class="fixed top-6 right-6 z-[1600] space-y-3 max-w-[280px]">
             <transition-group name="animate__animated" enter-active-class="animate__fadeInRight" leave-active-class="animate__fadeOutRight">
-                <div v-for="t in toasts" :key="t.id" class="glass px-6 py-4 rounded-3xl border-l-4 border-[#00ffaa] text-[11px] font-bold shadow-2xl">
+                <div v-for="t in toasts" :key="t.id" class="glass px-6 py-4 rounded-3xl border-l-4 border-[#00ffaa] text-[11px] font-bold shadow-2xl flex items-center gap-3">
                     {{ t.msg }}
                 </div>
             </transition-group>
+        </div>
+
+        <!-- WARNING MODAL -->
+        <div v-if="user && user.strikes > 0 && !strikeNoticeClosed" class="fixed inset-0 z-[1800] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 text-center">
+            <div class="glass p-8 rounded-[3rem] border-red-500/50 max-w-sm w-full">
+                <div class="text-5xl mb-4">⚠️</div>
+                <h2 class="font-brand text-xl text-red-500 mb-2 uppercase tracking-tighter">Внимание</h2>
+                <p class="text-white text-lg font-black mb-4">Нарушение: {{user.strikes}} / 3</p>
+                <div class="bg-red-500/10 p-5 rounded-2xl mb-8">
+                    <p class="text-[9px] text-red-400 uppercase font-black mb-2 tracking-widest">Причина:</p>
+                    <p class="text-sm italic text-gray-200">"{{user.strike_reason || 'Нарушение правил сообщества'}}"</p>
+                </div>
+                <button @click="strikeNoticeClosed = true" class="w-full py-4 glass rounded-2xl text-[10px] font-black uppercase">Принято</button>
+            </div>
         </div>
 
         <!-- ШАПКА -->
         <header class="sticky top-0 z-50 glass border-b px-4 py-4">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div @click="view = 'home'" class="flex items-center gap-3 cursor-pointer">
-                    <div class="w-10 h-10 bg-[#00ffaa] rounded-xl flex items-center justify-center text-black font-black text-xl shadow-lg">B</div>
+                    <img :src="LOGO_URL" class="w-10 h-10 rounded-xl object-cover shadow-lg">
                     <span class="font-brand text-xl italic tracking-tighter uppercase">БАРАХОЛКА</span>
                 </div>
-                <div v-if="user" @click="view = 'profile'" class="w-10 h-10 rounded-xl overflow-hidden border border-white/10 avatar-main">
+                <div v-if="user" @click="view = 'profile'" class="w-10 h-10 rounded-xl overflow-hidden avatar-main">
                     <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-full h-full object-cover">
                 </div>
                 <button v-else @click="view = 'auth'" class="text-[#00ffaa] text-xs font-black uppercase tracking-widest">Вход</button>
@@ -118,10 +133,10 @@
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 text-lg">🔍</span>
                         </div>
                         <div class="flex gap-2">
-                            <select v-model="filters.cat" class="glass flex-1 text-[10px] font-black uppercase py-4 px-4">
+                            <select v-model="filters.cat" class="glass flex-1 text-[10px] font-black uppercase py-4 px-4 cursor-pointer">
                                 <option v-for="c in categories" :value="c">{{c}}</option>
                             </select>
-                            <select v-model="sortBy" class="glass flex-1 text-[10px] font-black uppercase py-4 px-4">
+                            <select v-model="sortBy" class="glass flex-1 text-[10px] font-black uppercase py-4 px-4 cursor-pointer">
                                 <option value="new">Новинки</option>
                                 <option value="cheap">Дешевле</option>
                                 <option value="expensive">Дороже</option>
@@ -131,6 +146,7 @@
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                         <div v-for="item in sortedItems" :key="item.id" @click="openItem(item)" class="glass rounded-[2.5rem] p-3 relative group cursor-pointer hover:scale-[1.02] transition-all hover:border-[#00ffaa]/50 shadow-xl">
+                            <!-- Избранное -->
                             <button @click.stop="toggleFavorite(item.id)" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full glass flex items-center justify-center text-xs shadow-lg">
                                 {{ isFavorite(item.id) ? '❤️' : '🤍' }}
                             </button>
@@ -150,37 +166,34 @@
                     </div>
                 </div>
 
-                <!-- КОМАНДНЫЙ ЦЕНТР (АДМИНКА) -->
-                <div v-else-if="view === 'admin' && isAdmin" class="max-w-4xl mx-auto pb-10" key="admin">
-                    <div class="flex justify-between items-center mb-8 px-2">
+                <!-- КОМАНДНЫЙ ЦЕНТР -->
+                <div v-else-if="view === 'admin' && isAdmin" class="max-w-5xl mx-auto pb-10" key="admin">
+                    <div class="flex justify-between items-center mb-10 px-2">
                         <h2 class="font-brand text-2xl italic text-[#ff3366] tracking-tight uppercase">Командный Центр</h2>
                         <button @click="view = 'profile'" class="text-[10px] glass px-5 py-2 rounded-xl font-black uppercase">Назад</button>
                     </div>
                     <div class="grid grid-cols-1 gap-4 px-2">
-                        <div v-for="u in dbUsers" :key="u.id" class="glass p-5 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-5 border-l-4" :class="u.tg_id == MASTER_ADMIN_ID ? 'border-[#ff3366]' : 'border-transparent'">
+                        <div v-for="u in dbUsers" :key="u.id" class="glass p-6 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6 border-l-4" :class="u.tg_id == MASTER_ADMIN_ID ? 'border-[#ff3366]' : 'border-transparent'">
                             <div class="flex items-center gap-5 w-full">
                                 <img :src="u.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.name}`" class="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/5">
-                                <div class="flex-1">
-                                    <div class="text-base font-black flex items-center gap-2">
+                                <div class="flex-1 text-center md:text-left">
+                                    <div class="text-base font-black flex items-center justify-center md:justify-start gap-2">
                                         {{u.name}} <span v-if="u.has_crown">👑</span><span v-if="u.is_verified">✅</span>
                                     </div>
-                                    <div class="text-[11px] opacity-40 uppercase font-bold tracking-widest">Варны: {{u.strikes || 0}}/3 • ID: {{u.tg_id}}</div>
+                                    <div class="text-[11px] opacity-40 uppercase font-bold">Варны: {{u.strikes || 0}}/3 • ID: {{u.tg_id}}</div>
+                                    <div v-if="u.tg_id == MASTER_ADMIN_ID" class="text-[8px] text-[#ff3366] font-black uppercase mt-1">Владелец</div>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-center md:justify-end">
-                                <!-- Кнопки Создателя (только ты) -->
-                                <template v-if="isCreator && u.tg_id != MASTER_ADMIN_ID">
+                            
+                            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-center">
+                                <template v-if="isCreator">
                                     <button @click="toggleCrown(u)" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-lg">{{ u.has_crown ? '👑' : '⚪' }}</button>
                                     <button @click="toggleVerify(u)" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-lg">{{ u.is_verified ? '✅' : '⚪' }}</button>
-                                    <button @click="toggleAdminRole(u)" class="px-4 py-2 glass rounded-xl text-[10px] font-black" :class="u.is_admin ? 'text-red-500' : 'text-blue-500'">{{ u.is_admin ? 'СНЯТЬ АДМ' : 'ДАТЬ АДМ' }}</button>
+                                    <button v-if="u.tg_id != MASTER_ADMIN_ID" @click="toggleAdminRole(u)" class="px-4 py-2 glass rounded-xl text-[10px] font-black" :class="u.is_admin ? 'text-red-500' : 'text-blue-500'">{{ u.is_admin ? 'СНЯТЬ АДМ' : 'ДАТЬ АДМ' }}</button>
                                 </template>
-                                
-                                <!-- Кнопки Админа (все админы) -->
-                                <template v-if="u.tg_id != MASTER_ADMIN_ID && u.tg_id != user.tg_id">
-                                    <button @click="giveStrike(u)" class="px-4 py-2 glass text-orange-500 text-[10px] font-black rounded-xl">ВАРН</button>
-                                    <button @click="removeStrike(u)" class="w-10 h-10 glass text-green-500 rounded-xl flex items-center justify-center">↺</button>
-                                    <button @click="banUser(u)" class="px-4 py-2 bg-red-600/20 text-red-500 rounded-xl text-[10px] font-black">{{ u.is_banned ? 'РАЗБАН' : 'БАН' }}</button>
-                                </template>
+                                <button v-if="u.tg_id != MASTER_ADMIN_ID" @click="giveStrike(u)" class="px-4 py-2 glass text-orange-500 text-[10px] font-black rounded-xl uppercase">Варн</button>
+                                <button v-if="u.tg_id != MASTER_ADMIN_ID" @click="removeStrike(u)" class="w-10 h-10 glass text-green-500 rounded-xl flex items-center justify-center">↺</button>
+                                <button v-if="u.tg_id != user.tg_id && u.tg_id != MASTER_ADMIN_ID" @click="banUser(u)" class="px-4 py-2 bg-red-600/20 text-red-500 rounded-xl text-[10px] font-black uppercase">БАН</button>
                             </div>
                         </div>
                     </div>
@@ -191,23 +204,22 @@
                     <div v-if="isAdmin" @click="view = 'admin'" class="mb-8 p-6 rounded-[2.5rem] bg-[#ff3366] text-white text-center font-black text-xs uppercase shadow-xl cursor-pointer">
                         ОТКРЫТЬ КОМАНДНЫЙ ЦЕНТР
                     </div>
-                    <div class="glass p-8 rounded-[4rem] text-center border-t-8 border-[#00ffaa] shadow-2xl relative">
+                    <div class="glass p-10 rounded-[4rem] text-center border-t-8 border-[#00ffaa] shadow-2xl relative">
                         <div class="relative inline-block mb-8">
-                            <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-40 h-40 rounded-[3.5rem] object-cover ring-4 ring-[#00ffaa]/20 shadow-xl">
-                            <label class="absolute -bottom-2 -right-2 w-12 h-12 bg-[#00ffaa] rounded-2xl flex items-center justify-center cursor-pointer shadow-xl border-4 border-[#050505]">
+                            <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-40 h-40 rounded-[3.5rem] object-cover ring-4 ring-[#00ffaa]/20">
+                            <label class="absolute -bottom-2 -right-2 w-12 h-12 bg-[#00ffaa] rounded-2xl flex items-center justify-center cursor-pointer shadow-xl border-4 border-[#050505] hover:rotate-12 transition-all">
                                 <span class="text-xl">📸</span>
                                 <input type="file" @change="handleAvatarUpload" class="hidden">
                             </label>
                         </div>
-                        <div class="mb-8">
-                            <h3 class="text-3xl font-black italic uppercase flex items-center justify-center gap-3">
+                        <div v-if="!editingProfile" class="mb-8 text-center">
+                            <h3 class="text-3xl font-black italic uppercase tracking-tighter flex items-center justify-center gap-3">
                                 {{user.name}} <span v-if="user.has_crown">👑</span><span v-if="user.is_verified">✅</span>
                             </h3>
-                            <p class="text-red-500 font-black text-[11px] uppercase mt-2 tracking-widest" v-if="user.strikes > 0">ПРЕДУПРЕЖДЕНИЯ: {{user.strikes}} / 3</p>
-                            <button @click="editingProfile = true" class="text-[#00ffaa] text-[10px] font-bold uppercase tracking-widest mt-4">Изменить никнейм</button>
+                            <button @click="editingProfile = true" class="text-[#00ffaa] text-[10px] font-bold uppercase tracking-widest mt-4">Изменить имя</button>
                         </div>
-                        <div v-if="editingProfile" class="mb-8 space-y-4 max-w-xs mx-auto">
-                            <input v-model="editName" type="text" class="w-full text-center text-sm font-bold glass">
+                        <div v-else class="mb-8 space-y-4 max-w-xs mx-auto">
+                            <input v-model="editName" type="text" class="w-full text-center text-sm font-bold glass" placeholder="Новое имя">
                             <div class="flex gap-2">
                                 <button @click="updateProfile" class="btn-neon flex-1 py-4 text-[10px] font-black">СОХРАНИТЬ</button>
                                 <button @click="editingProfile = false" class="glass flex-1 py-4 text-[10px] font-bold">ОТМЕНА</button>
@@ -220,11 +232,12 @@
                         <button @click="logout" class="text-red-500 font-black uppercase text-[10px] tracking-widest opacity-50">Выход</button>
                     </div>
                     
+                    <!-- Содержимое вкладок -->
                     <div class="mt-12 space-y-4">
-                        <div v-if="profileTab === 'my'" class="space-y-4 animate__animated animate__fadeIn">
+                        <div v-if="profileTab === 'my'" class="space-y-4">
                             <div v-for="item in myItems" :key="item.id" class="glass p-5 rounded-[2.5rem] flex items-center justify-between">
                                 <div class="flex items-center gap-6">
-                                    <img :src="item.img" class="w-16 h-16 rounded-2xl object-cover shadow-xl">
+                                    <img :src="item.img" class="w-16 h-16 rounded-[1.5rem] object-cover shadow-xl">
                                     <div>
                                         <h4 class="text-sm font-extrabold uppercase tracking-tight">{{item.title}}</h4>
                                         <span class="text-xs font-brand text-[#00ffaa]">{{item.price}} ₽</span>
@@ -232,7 +245,6 @@
                                 </div>
                                 <button @click="deleteItem(item.id)" class="text-red-500 font-black text-xs px-4">УДАЛИТЬ</button>
                             </div>
-                            <div v-if="myItems.length === 0" class="text-center opacity-20 py-10 italic">Пусто</div>
                         </div>
                         <div v-else class="grid grid-cols-2 gap-4 animate__animated animate__fadeIn">
                             <div v-for="item in favoriteItems" :key="item.id" @click="openItem(item)" class="glass p-3 rounded-[2rem] text-center relative">
@@ -240,43 +252,44 @@
                                 <div class="text-[10px] font-extrabold uppercase truncate px-1">{{item.title}}</div>
                                 <button @click.stop="toggleFavorite(item.id)" class="mt-2 text-red-500 text-[10px] font-black uppercase">УБРАТЬ ❤️</button>
                             </div>
-                            <div v-if="favoriteItems.length === 0" class="col-span-2 text-center opacity-20 py-10 italic">Пусто</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ДОБАВЛЕНИЕ ЛОТА -->
+                <!-- ДОБАВЛЕНИЕ -->
                 <div v-else-if="view === 'add'" class="max-w-xl mx-auto pb-10" key="add">
-                    <div class="glass p-8 rounded-[4.5rem] shadow-2xl border-t-8 border-[#00ffaa]">
+                    <div class="glass p-12 rounded-[4.5rem] shadow-2xl border-t-8 border-[#00ffaa]">
                         <h2 class="font-brand text-2xl mb-12 italic text-center uppercase tracking-tighter">Новый лот</h2>
                         <div class="space-y-6">
                             <div @click="$refs.fileInput.click()" class="h-72 glass rounded-[3.5rem] border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer overflow-hidden group transition-all hover:border-[#00ffaa]/50">
                                 <img v-if="newItem.img" :src="newItem.img" class="w-full h-full object-cover">
-                                <div v-else class="text-center opacity-30 group-hover:opacity-100">
+                                <div v-else class="text-center opacity-30 group-hover:scale-110 transition-all">
                                     <span class="text-5xl mb-4 block">📸</span>
-                                    <span class="text-[10px] font-black uppercase tracking-widest">Добавить фото</span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest">Выбрать фото</span>
                                 </div>
                                 <input type="file" ref="fileInput" @change="handleFileUpload" class="hidden">
                             </div>
-                            <input v-model="newItem.title" type="text" placeholder="Название (Geekvape, Xros...)">
+                            <input v-model="newItem.title" type="text" placeholder="Название товара">
                             <div class="grid grid-cols-2 gap-5">
-                                <select v-model="newItem.category" class="glass font-bold text-xs uppercase tracking-widest"><option v-for="c in categories" :value="c">{{c}}</option></select>
+                                <select v-model="newItem.category" class="glass font-bold text-xs">
+                                    <option v-for="c in categories.slice(1)" :value="c">{{c}}</option>
+                                </select>
                                 <input v-model.number="newItem.price" type="number" placeholder="Цена ₽">
                             </div>
                             <input v-model="newItem.city" type="text" placeholder="Ваш город">
                             <input v-model="newItem.tg_user" type="text" placeholder="Твой ник Telegram без @">
-                            <textarea v-model="newItem.desc_text" placeholder="Описание товара: состояние, комплект, нюансы..." class="h-44 leading-relaxed"></textarea>
-                            <button @click="createListing" class="btn-neon w-full py-7 text-xs font-black uppercase tracking-widest shadow-xl">Опубликовать в Облако</button>
+                            <textarea v-model="newItem.desc_text" placeholder="Описание..." class="h-44"></textarea>
+                            <button @click="createListing" class="btn-neon w-full py-7 rounded-[2.5rem] text-xs font-black shadow-xl uppercase">Опубликовать</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- ПРОСМОТР ЛОТА -->
+                <!-- ПРОДУКТ -->
                 <div v-else-if="view === 'product' && selectedItem" class="max-w-5xl mx-auto pb-10 px-2" key="product">
-                    <button @click="view = 'home'" class="mb-10 text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-3"><span>←</span> Назад на витрину</button>
+                    <button @click="view = 'home'" class="mb-10 text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-white flex items-center gap-3 transition-all"><span>←</span> Назад</button>
                     <div class="flex flex-col md:flex-row gap-16 items-start">
                         <div class="flex-1 w-full relative">
-                            <img :src="selectedItem.img" class="w-full aspect-square object-cover rounded-[4rem] shadow-2xl ring-1 ring-white/10" :class="{'grayscale opacity-40': selectedItem.status === 'sold'}">
+                            <img :src="selectedItem.img" class="w-full aspect-square object-cover rounded-[4rem] shadow-2xl ring-1 ring-white/10">
                             <div v-if="selectedItem.status === 'sold'" class="absolute inset-0 flex items-center justify-center bg-black/60 rounded-[4rem]">
                                 <span class="font-brand text-4xl text-red-500 -rotate-12 border-4 border-red-500 px-8 py-3 rounded-2xl uppercase font-black">ПРОДАНО</span>
                             </div>
@@ -294,7 +307,7 @@
                                     <div class="text-sm font-black uppercase italic tracking-tight flex items-center gap-1">{{selectedItem.seller_name}} <span v-if="getUserCrown(selectedItem.user_id)">👑</span></div>
                                 </div>
                             </div>
-                            <p class="text-base text-gray-400 font-medium leading-relaxed italic mb-12 opacity-80">{{selectedItem.desc_text}}</p>
+                            <p class="text-base text-gray-400 leading-relaxed italic mb-12 opacity-80 font-medium">{{selectedItem.desc_text}}</p>
                             <button @click="contactSeller" :disabled="selectedItem.status === 'sold'" class="btn-neon w-full py-8 rounded-[3rem] text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl">Связаться в Telegram</button>
                         </div>
                     </div>
@@ -304,17 +317,16 @@
                 <div v-else-if="view === 'auth'" class="max-w-md mx-auto py-20 text-center px-4" key="auth">
                     <div class="glass p-14 rounded-[5rem] border-b-8 border-sky-500 shadow-2xl">
                         <h2 class="font-brand text-3xl mb-4 italic uppercase tracking-tighter leading-none">Вход</h2>
-                        <p class="text-[10px] text-gray-500 mb-14 uppercase tracking-[0.3em] font-black opacity-60">Identity Sync</p>
                         <div v-if="authStep === 'input'" class="space-y-8">
-                            <input v-model="auth.name" type="text" placeholder="Ваше имя для сайта" class="w-full text-center text-sm font-bold glass">
-                            <button @click="startAuth" class="btn-neon w-full py-7 rounded-[3rem] text-xs font-black uppercase tracking-widest">Продолжить</button>
+                            <input v-model="auth.name" type="text" placeholder="Введите ник на сайте" class="w-full text-center text-sm font-bold glass">
+                            <button @click="startAuth" class="btn-neon w-full py-7 rounded-[3rem] text-xs font-black">ПРОДОЛЖИТЬ</button>
                         </div>
                         <div v-else class="space-y-10 animate__animated animate__fadeIn">
-                            <div class="bg-white/5 p-10 rounded-[4rem] border border-sky-500/20 shadow-inner">
-                                <div class="auth-code neon-text tracking-tighter">{{verifyCode}}</div>
-                                <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest leading-relaxed">Отправьте этот код боту: <br> <span class="text-sky-400">@your_vape_bot</span></p>
+                            <div class="auth-code-container">
+                                <div class="auth-code-text">{{verifyCode}}</div>
                             </div>
-                            <a href="https://t.me/your_vape_bot" target="_blank" class="block w-full py-7 rounded-[3rem] bg-sky-600 text-white font-black text-xs uppercase shadow-2xl">В ТЕЛЕГРАМ</a>
+                            <p class="text-[10px] text-gray-500 font-black uppercase">Отправь боту этот код: <br> <span class="text-sky-400">@your_vape_bot</span></p>
+                            <a href="https://t.me/your_vape_bot" target="_blank" class="block w-full py-7 rounded-[3rem] bg-sky-600 text-white font-black text-xs shadow-2xl uppercase">В Telegram</a>
                         </div>
                     </div>
                 </div>
@@ -348,7 +360,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const MASTER_ADMIN_ID = 1735153058; // ТВОЙ ID
 const BOT_TOKEN = '7688454041:AAFFBc0Ye7RRq0RFuSst_QfTqQ0TpQu9aWI';
-const LOGO_URL = 'https://raw.githubusercontent.com/Kosta351/images/main/walter.jpg';
+const LOGO_URL = 'https://i.postimg.cc/mD8370vC/walter.jpg';
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -365,8 +377,7 @@ createApp({
             auth: { name: '' }, authStep: 'input', verifyCode: '',
             newItem: { title: '', category: 'Поды', price: null, city: '', desc_text: '', tg_user: '', img: '' },
             selectedItem: null, contactRevealed: false, editingProfile: false, editName: '', toasts: [],
-            strikeNoticeClosed: false,
-            MASTER_ADMIN_ID: MASTER_ADMIN_ID
+            strikeNoticeClosed: false, MASTER_ADMIN_ID: MASTER_ADMIN_ID
         }
     },
     computed: {
@@ -375,8 +386,8 @@ createApp({
         sortedItems() {
             let filtered = this.items.filter(i => {
                 const matchCat = this.filters.cat === 'Все' || i.category === this.filters.cat;
-                const q = this.searchQuery.toLowerCase();
-                return matchCat && (i.title.toLowerCase().includes(q) || i.city.toLowerCase().includes(q));
+                const matchSearch = i.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || i.city.toLowerCase().includes(this.searchQuery.toLowerCase());
+                return matchCat && matchSearch;
             });
             if (this.sortBy === 'cheap') return filtered.sort((a, b) => a.price - b.price);
             if (this.sortBy === 'expensive') return filtered.sort((a, b) => b.price - a.price);
@@ -426,7 +437,7 @@ createApp({
         async updateProfile() {
             if (!this.editName) return;
             const { error } = await client.from('users').update({ name: this.editName }).eq('id', this.user.id);
-            if (!error) { this.editingProfile = false; this.notify('Ник обновлен! ✨'); await this.fetchData(); }
+            if (!error) { this.editingProfile = false; this.notify('Имя изменено ✨'); await this.fetchData(); }
         },
         async startAuth() {
             this.verifyCode = Math.floor(1000 + Math.random() * 9000).toString(); this.authStep = 'telegram';
@@ -460,17 +471,11 @@ createApp({
         async createListing() {
             if (!this.newItem.img || !this.newItem.title || !this.newItem.price) return this.notify('Заполни всё!');
             const { error } = await client.from('items').insert([{
-                title: this.newItem.title,
-                category: this.newItem.category,
-                price: this.newItem.price,
-                city: this.newItem.city,
-                desc_text: this.newItem.desc_text,
-                tg_user: this.newItem.tg_user,
-                img: this.newItem.img,
-                user_id: this.user.id,
-                seller_name: this.user.name
+                title: this.newItem.title, category: this.newItem.category, price: this.newItem.price,
+                city: this.newItem.city, desc_text: this.newItem.desc_text, tg_user: this.newItem.tg_user,
+                img: this.newItem.img, user_id: this.user.id, seller_name: this.user.name
             }]);
-            if (error) return this.notify('Ошибка базы!');
+            if (error) return this.notify('Ошибка!');
             this.view = 'home'; this.newItem = { title: '', category: 'Поды', price: null, city: '', desc_text: '', tg_user: '', img: '' };
             this.notify('Опубликовано! 🚀');
         },
@@ -482,19 +487,19 @@ createApp({
             }
         },
         async toggleAdminRole(u) { await client.from('users').update({ is_admin: !u.is_admin }).eq('id', u.id); this.notify('Права изменены'); },
-        async toggleVerify(u) { await client.from('users').update({ is_verified: !u.is_verified }).eq('id', u.id); this.notify('Статус изменен'); },
-        async toggleCrown(u) { await client.from('users').update({ has_crown: !u.has_crown }).eq('id', u.id); this.notify('Корона изменена'); },
+        async toggleVerify(u) { await client.from('users').update({ is_verified: !u.is_verified }).eq('id', u.id); this.notify('Галочка обновлена'); },
+        async toggleCrown(u) { await client.from('users').update({ has_crown: !u.has_crown }).eq('id', u.id); this.notify('Корона обновлена'); },
         async giveStrike(u) {
-            const reason = prompt(`Укажите причину варна для ${u.name}:`);
+            const reason = prompt(`Причина варна для ${u.name}:`);
             if (reason === null) return;
             let strikes = (u.strikes || 0) + 1;
             await client.from('users').update({ strikes, strike_reason: reason, is_banned: strikes >= 3 }).eq('id', u.id);
-            this.notify(`Варн (${strikes}/3) выдан`);
+            this.notify(`Варн выдан!`);
         },
         async removeStrike(u) { await client.from('users').update({ strikes: 0, strike_reason: '' }).eq('id', u.id); this.notify('Варны обнулены'); },
         async banUser(u) { await client.from('users').update({ is_banned: !u.is_banned, strikes: 0 }).eq('id', u.id); this.notify('Бан обновлен'); },
-        openItem(item) { this.selectedItem = item; this.view = 'product'; window.scrollTo(0,0); },
-        contactSeller() { window.open(`https://t.me/${this.selectedItem.tg_user.replace('@', '')}`, '_blank'); },
+        openItem(item) { this.selectedItem = item; this.contactRevealed = false; this.view = 'product'; window.scrollTo(0,0); },
+        contactSeller() { this.contactRevealed = true; setTimeout(() => window.open(`https://t.me/${this.selectedItem.tg_user.replace('@', '')}`, '_blank'), 800); },
         handleFileUpload(e) {
             const reader = new FileReader();
             reader.onload = (f) => this.newItem.img = f.target.result;
