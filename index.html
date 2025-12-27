@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bazar Pro | Final Fix</title>
+    <title>Bazar Pro | Rank System</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -19,13 +19,15 @@
         .btn-prime { background: linear-gradient(135deg, var(--accent), #00d4ff); color: #000; font-weight: 800; transition: 0.3s; border-radius: 1.2rem; }
         .tab-bar-item { opacity: 0.4; transition: 0.4s; cursor: pointer; }
         .tab-bar-item.active { opacity: 1; color: var(--accent); }
-        .badge { font-size: 7px; font-weight: 900; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; }
-        .badge-top { background: #ff3366; color: #fff; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         [v-cloak] { display: none; }
         input, textarea, select { background: rgba(255,255,255,0.05) !important; border: 1px solid var(--border) !important; color: white !important; outline: none; }
-        .strike-modal { background: rgba(10, 0, 0, 0.98); backdrop-filter: blur(20px); border: 2px solid #ff3366; box-shadow: 0 0 50px rgba(255, 51, 102, 0.3); }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
+        /* Цвета рангов */
+        .rank-1 { color: #38bdf8; } /* Админ - Голубой */
+        .rank-2 { color: #a855f7; } /* Старший - Фиолетовый */
+        .rank-3 { color: #ff3366; } /* Главный - Розовый */
     </style>
 </head>
 <body class="pb-32">
@@ -33,8 +35,8 @@
 <div id="app" v-cloak>
     
     <!-- МОДАЛКА ВАРНА -->
-    <div v-if="user && user.strikes > 0 && !strikeNoticeClosed" class="fixed inset-0 z-[6000] flex items-center justify-center p-6 text-center bg-black/80 backdrop-blur-xl">
-        <div class="strike-modal p-10 rounded-[3.5rem] max-w-sm w-full animate__animated animate__shakeX">
+    <div v-if="user && user.strikes > 0 && !strikeNoticeClosed" class="fixed inset-0 z-[6000] flex items-center justify-center p-6 text-center bg-black/90 backdrop-blur-xl">
+        <div class="glass p-10 rounded-[3.5rem] max-w-sm w-full border-[#ff3366] animate__animated animate__shakeX">
             <div class="text-6xl mb-6">⚠️</div>
             <h2 class="font-brand text-xl text-[#ff3366] uppercase mb-2">Нарушение</h2>
             <div class="bg-white/5 p-6 rounded-3xl mb-8 text-left">
@@ -63,8 +65,8 @@
         <header class="p-6">
             <div class="flex justify-between items-center mb-6">
                 <div @click="view = 'home'" class="cursor-pointer">
-                    <h1 class="font-brand text-2xl font-black italic tracking-tighter">BAZAR<span class="text-[#00ffaa]">.</span></h1>
-                    <div class="text-[9px] font-bold opacity-30 uppercase tracking-widest mt-1">{{ items.length }} лотов онлайн</div>
+                    <h1 class="font-brand text-2xl font-black italic tracking-tighter leading-none">BAZAR<span class="text-[#00ffaa]">.</span></h1>
+                    <div class="text-[9px] font-bold opacity-30 uppercase tracking-widest mt-1">{{ items.length }} лотов • {{ marketVolume.toLocaleString() }} ₽</div>
                 </div>
                 <div v-if="user" @click="view = 'profile'" class="w-12 h-12 rounded-2xl glass p-1 cursor-pointer overflow-hidden ring-2 ring-white/5">
                     <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-full h-full object-cover rounded-xl">
@@ -78,7 +80,6 @@
 
                 <!-- ГЛАВНАЯ -->
                 <div v-if="view === 'home'" key="home">
-                    <!-- Поиск и категории ВСЕГДА ТУТ -->
                     <div class="mb-8 space-y-4">
                         <div class="glass rounded-[1.5rem] flex items-center px-4 py-1">
                             <input v-model="searchQuery" type="text" placeholder="Поиск девайса..." class="bg-transparent border-none w-full p-4 text-sm text-white focus:ring-0">
@@ -91,33 +92,13 @@
                         </div>
                     </div>
 
-                    <!-- СЛАЙДЕР ГОРЯЧЕЕ -->
-                    <div v-if="hotItems.length" class="mb-10 animate__animated animate__fadeIn">
-                        <div class="flex gap-4 overflow-x-auto no-scrollbar -mx-2 px-2">
-                            <div v-for="item in hotItems" :key="item.id" @click="openItem(item)" 
-                                 class="min-w-[280px] h-40 glass rounded-[2.5rem] relative overflow-hidden flex-shrink-0 p-6 flex flex-col justify-end group active:scale-95 transition-all">
-                                <img :src="item.img" class="absolute inset-0 w-full h-full object-cover opacity-40">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
-                                <div class="relative z-10">
-                                    <span class="badge badge-top mb-2 inline-block">HOT</span>
-                                    <h4 class="font-brand text-xs uppercase truncate">{{item.title}}</h4>
-                                    <p class="text-[#00ffaa] font-black text-lg">{{item.price}} ₽</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- СЕТКА ТОВАРОВ -->
                     <div v-if="sortedItems.length" class="grid grid-cols-2 gap-4">
-                        <div v-for="item in sortedItems" :key="item.id" @click="openItem(item)" class="glass rounded-[2.2rem] p-3 relative hover:translate-y-[-5px] transition-all">
+                        <div v-for="item in sortedItems" :key="item.id" @click="openItem(item)" class="glass rounded-[2.2rem] p-3 relative group">
                             <div class="aspect-square rounded-[1.6rem] overflow-hidden mb-3 bg-black/40 relative">
                                 <img :src="item.img" class="w-full h-full object-cover">
                                 <button @click.stop="toggleFavorite(item.id)" class="absolute top-2 right-2 w-8 h-8 rounded-xl glass flex items-center justify-center text-[10px] z-20">
                                     {{ isFavorite(item.id) ? '❤️' : '🤍' }}
                                 </button>
-                                <div v-if="item.status === 'sold'" class="absolute inset-0 bg-black/70 flex items-center justify-center">
-                                    <span class="text-red-500 font-black text-[10px] uppercase">SOLD</span>
-                                </div>
                             </div>
                             <div class="px-1">
                                 <h3 class="text-[10px] font-black uppercase truncate">{{item.title}}</h3>
@@ -125,48 +106,25 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- СОСТОЯНИЕ КОГДА ПУСТО -->
-                    <div v-else class="text-center py-20 animate__animated animate__fadeIn">
-                        <div class="text-5xl mb-6 opacity-20">📦</div>
-                        <h3 class="font-brand text-[11px] uppercase opacity-40 mb-8">На витрине пока пусто</h3>
-                        <button @click="user ? view = 'add' : view = 'auth'" class="btn-prime px-8 py-4 text-[10px] uppercase">Выставить свой лот</button>
-                    </div>
-                </div>
-
-                <!-- ПРОСМОТР ТОВАРА -->
-                <div v-else-if="view === 'product' && selectedItem" key="product" class="animate__animated animate__fadeInUp">
-                    <button @click="view = 'home'" class="mb-6 opacity-30 text-[10px] font-black uppercase">← Назад</button>
-                    <div class="glass rounded-[3rem] overflow-hidden">
-                        <div class="aspect-square relative">
-                            <img :src="activeImg || selectedItem.img" class="w-full h-full object-cover">
-                            <!-- Галерея из 3-х фото -->
-                            <div class="absolute bottom-4 left-0 w-full flex justify-center gap-2 px-4">
-                                <div v-for="pic in [selectedItem.img, selectedItem.img2, selectedItem.img3].filter(x => x)" 
-                                     @click="activeImg = pic"
-                                     :class="['w-12 h-12 rounded-xl glass border-2 overflow-hidden', activeImg === pic ? 'border-[#00ffaa]' : 'border-transparent opacity-50']">
-                                    <img :src="pic" class="w-full h-full object-cover">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-8">
-                            <h2 class="text-2xl font-brand font-black uppercase italic mb-2">{{selectedItem.title}}</h2>
-                            <div class="text-2xl font-brand text-[#00ffaa] mb-8">{{selectedItem.price}} ₽</div>
-                            <p class="text-gray-400 text-sm leading-relaxed mb-10 whitespace-pre-wrap">{{selectedItem.desc_text}}</p>
-                            <button @click="contactSeller" :disabled="selectedItem.status === 'sold'" class="btn-prime w-full py-6 text-xs uppercase font-black">
-                                Написать продавцу
-                            </button>
-                        </div>
-                    </div>
+                    <div v-else class="text-center py-20 opacity-30 uppercase text-[10px] font-black">Ничего не найдено</div>
                 </div>
 
                 <!-- ПРОФИЛЬ -->
                 <div v-else-if="view === 'profile' && user" key="profile" class="space-y-6">
-                    <div v-if="isAdmin" @click="view = 'admin'" class="p-4 rounded-3xl bg-[#ff3366] text-white text-center font-black text-[10px] uppercase cursor-pointer">Админ-центр 🛠️</div>
-                    <div class="glass p-10 rounded-[3rem] text-center">
-                        <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-24 h-24 rounded-[2rem] mx-auto mb-6 object-cover ring-4 ring-[#00ffaa]/10">
+                    <!-- Плашка админки (видят только ранги 1+) -->
+                    <div v-if="user.rank >= 1" @click="view = 'admin'" class="p-4 rounded-3xl bg-white/5 border border-white/10 text-center font-black text-[10px] uppercase cursor-pointer hover:bg-white/10 transition-all">
+                        Командный центр 🛠️ <span class="ml-2 opacity-50">{{ getRankName(user.rank) }}</span>
+                    </div>
+
+                    <div class="glass p-10 rounded-[3.5rem] text-center">
+                        <div class="relative inline-block mx-auto mb-6">
+                            <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-24 h-24 rounded-[2rem] object-cover ring-4 ring-[#00ffaa]/10">
+                            <label class="absolute -bottom-2 -right-2 bg-[#00ffaa] text-black w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer shadow-xl">
+                                📸 <input type="file" @change="handleAvatarUpload" class="hidden" accept="image/*">
+                            </label>
+                        </div>
                         <h2 class="font-brand text-xl uppercase italic">{{user.name}}</h2>
-                        <button @click="logout" class="block w-full mt-10 text-red-500 text-[10px] font-black uppercase opacity-40">Выход</button>
+                        <div :class="'rank-' + user.rank" class="text-[9px] font-black uppercase mt-1">{{ getRankName(user.rank) }}</div>
                     </div>
 
                     <div class="flex gap-2 overflow-x-auto no-scrollbar">
@@ -175,6 +133,7 @@
                         <button @click="profileTab = 'edit'" :class="['px-6 py-4 rounded-2xl text-[10px] font-black uppercase glass', {active: profileTab === 'edit'}]">Настройки</button>
                     </div>
 
+                    <!-- ВКЛАДКА МОИ ЛОТЫ -->
                     <div v-if="profileTab === 'my'" class="space-y-3">
                         <div v-for="item in myItems" :key="item.id" class="glass p-4 rounded-3xl flex items-center justify-between">
                             <div class="flex items-center gap-4">
@@ -184,15 +143,67 @@
                             <button @click="deleteItem(item.id)" class="text-red-500 p-2">✕</button>
                         </div>
                     </div>
+
+                    <!-- ВКЛАДКА ИЗБРАННОЕ -->
+                    <div v-else-if="profileTab === 'fav'" class="grid grid-cols-2 gap-4">
+                        <div v-for="item in favoriteItems" :key="item.id" @click="openItem(item)" class="glass p-3 rounded-3xl">
+                            <img :src="item.img" class="w-full aspect-square rounded-2xl object-cover mb-2">
+                            <div class="text-[9px] font-black uppercase truncate">{{item.title}}</div>
+                        </div>
+                    </div>
+
+                    <!-- ВКЛАДКА НАСТРОЙКИ (ПОЧИНИЛ) -->
+                    <div v-else-if="profileTab === 'edit'" class="glass p-8 rounded-[2.5rem] space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-black opacity-30 ml-4 uppercase">Твой никнейм</label>
+                            <input v-model="editUser.name" type="text" class="w-full p-4 glass rounded-2xl">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-black opacity-30 ml-4 uppercase">О себе (Bio)</label>
+                            <input v-model="editUser.bio" type="text" class="w-full p-4 glass rounded-2xl">
+                        </div>
+                        <button @click="saveProfile" class="btn-prime w-full py-5 text-[10px] font-black uppercase">Сохранить</button>
+                        <button @click="logout" class="w-full text-red-500 text-[10px] font-black uppercase opacity-40 py-4">Выйти из аккаунта</button>
+                    </div>
                 </div>
 
-                <!-- ДОБАВЛЕНИЕ (3 ФОТО) -->
+                <!-- АДМИНКА (НОВАЯ С РАНГАМИ) -->
+                <div v-else-if="view === 'admin' && user.rank >= 1" key="admin" class="space-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="font-brand text-xl text-[#ff3366] uppercase italic leading-none">Команда</h2>
+                        <button @click="view = 'profile'" class="text-[10px] glass px-4 py-2 rounded-xl uppercase">Назад</button>
+                    </div>
+                    
+                    <div v-for="u in dbUsers" :key="u.id" class="glass p-4 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <img :src="u.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.name}`" class="w-10 h-10 rounded-xl object-cover">
+                                <div>
+                                    <div class="text-[10px] font-black uppercase">{{u.name}}</div>
+                                    <div :class="'rank-' + u.rank" class="text-[8px] font-bold uppercase">{{ getRankName(u.rank) }}</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="giveStrike(u)" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-xs">⚠️</button>
+                                <button @click="banUser(u)" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-xs text-red-500">🚫</button>
+                            </div>
+                        </div>
+
+                        <!-- Управление ролями (только если ранг выше) -->
+                        <div v-if="user.rank > u.rank || user.rank === 3" class="flex gap-2 pt-2 border-t border-white/5">
+                            <button @click="changeRank(u, 0)" class="flex-1 py-2 glass rounded-lg text-[7px] font-black uppercase">Юзер</button>
+                            <button @click="changeRank(u, 1)" class="flex-1 py-2 glass rounded-lg text-[7px] font-black uppercase text-sky-400">Админ</button>
+                            <button v-if="user.rank >= 2" @click="changeRank(u, 2)" class="flex-1 py-2 glass rounded-lg text-[7px] font-black uppercase text-purple-400">Старший</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ДОБАВЛЕНИЕ -->
                 <div v-else-if="view === 'add'" key="add">
                     <div class="glass p-8 rounded-[3rem] space-y-4">
-                        <h2 class="font-brand text-xl uppercase text-center mb-6 italic">Выставить лот</h2>
-                        <div class="grid grid-cols-3 gap-3 mb-4">
-                            <div v-for="n in [1,2,3]" :key="n" @click="triggerFile(n)" 
-                                 class="aspect-square glass rounded-2xl flex flex-col items-center justify-center cursor-pointer overflow-hidden border-2 border-dashed border-white/10 hover:border-[#00ffaa]/50 transition-all">
+                        <h2 class="font-brand text-xl uppercase text-center mb-6 italic">Новый лот</h2>
+                        <div class="grid grid-cols-3 gap-3 mb-2">
+                            <div v-for="n in [1,2,3]" :key="n" @click="triggerFile(n)" class="aspect-square glass rounded-2xl flex flex-col items-center justify-center cursor-pointer overflow-hidden border-2 border-dashed border-white/10">
                                 <img v-if="getNewImg(n)" :src="getNewImg(n)" class="w-full h-full object-cover">
                                 <span v-else class="text-xl opacity-20">📸</span>
                                 <input type="file" :ref="'file'+n" @change="e => handleFileUpload(e, n)" class="hidden" accept="image/*">
@@ -201,39 +212,44 @@
                         <input v-model="newItem.title" type="text" placeholder="Название" class="w-full p-4 glass rounded-2xl">
                         <input v-model.number="newItem.price" type="number" placeholder="Цена ₽" class="w-full p-4 glass rounded-2xl">
                         <input v-model="newItem.city" type="text" placeholder="Город" class="w-full p-4 glass rounded-2xl">
-                        <input v-model="newItem.tg_user" type="text" placeholder="Твой Telegram ник" class="w-full p-4 glass rounded-2xl">
+                        <input v-model="newItem.tg_user" type="text" placeholder="Telegram ник (без @)" class="w-full p-4 glass rounded-2xl">
                         <textarea v-model="newItem.desc_text" placeholder="Описание..." class="w-full p-4 glass rounded-2xl h-32"></textarea>
                         <button @click="createListing" :disabled="publishing || !newItem.img" class="btn-prime w-full py-6 text-[10px] uppercase font-black">Опубликовать</button>
                     </div>
                 </div>
 
-                <!-- ВХОД -->
-                <div v-else-if="view === 'auth'" key="auth" class="max-w-md mx-auto py-10">
-                    <div class="glass p-10 rounded-[3.5rem] text-center animate__animated animate__zoomIn">
-                        <h2 class="font-brand text-2xl uppercase mb-8">Авторизация</h2>
-                        <input v-model="auth.name" type="text" placeholder="Твой ник" class="w-full p-5 glass rounded-2xl mb-4 text-center text-white font-bold">
-                        <button @click="startAuth" class="btn-prime w-full py-5 text-[10px] uppercase">Получить код</button>
-                        <div v-if="verifyCode" class="mt-8">
-                            <div class="text-4xl font-brand text-[#00ffaa] mb-4">{{verifyCode}}</div>
-                            <p class="text-[9px] opacity-40 uppercase">Напиши код боту: @your_vape_bot</p>
+                <!-- ПРОСМОТР ТОВАРА -->
+                <div v-else-if="view === 'product' && selectedItem" key="product">
+                    <button @click="view = 'home'" class="mb-6 opacity-30 text-[10px] font-black uppercase">← Назад</button>
+                    <div class="glass rounded-[3rem] overflow-hidden">
+                        <div class="aspect-square relative">
+                            <img :src="activeImg || selectedItem.img" class="w-full h-full object-cover">
+                            <div class="absolute bottom-4 left-0 w-full flex justify-center gap-2 px-4">
+                                <div v-for="pic in [selectedItem.img, selectedItem.img2, selectedItem.img3].filter(x => x)" 
+                                     @click="activeImg = pic"
+                                     :class="['w-12 h-12 rounded-xl glass border-2 overflow-hidden', activeImg === pic ? 'border-[#00ffaa]' : 'border-transparent opacity-50']">
+                                    <img :src="pic" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-8">
+                            <h2 class="text-2xl font-brand font-black uppercase italic mb-2 leading-none">{{selectedItem.title}}</h2>
+                            <div class="text-2xl font-brand text-[#00ffaa] mb-8">{{selectedItem.price}} ₽</div>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-10 whitespace-pre-wrap">{{selectedItem.desc_text}}</p>
+                            <button @click="contactSeller" class="btn-prime w-full py-6 text-xs uppercase font-black">Связаться в ТГ</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- АДМИНКА -->
-                <div v-else-if="view === 'admin' && isAdmin" key="admin" class="space-y-4">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="font-brand text-xl text-[#ff3366] uppercase italic">Admin</h2>
-                        <button @click="view = 'profile'" class="text-[10px] glass px-4 py-2 rounded-xl">Назад</button>
-                    </div>
-                    <div v-for="u in dbUsers" :key="u.id" class="glass p-4 rounded-3xl flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <img :src="u.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.name}`" class="w-10 h-10 rounded-xl object-cover">
-                            <div class="text-[10px] font-black uppercase">{{u.name}} <span v-if="u.has_crown">👑</span></div>
-                        </div>
-                        <div class="flex gap-1">
-                            <button @click="giveStrike(u)" class="p-2 glass text-orange-500 rounded-lg text-[8px] font-black">ВАРН</button>
-                            <button @click="banUser(u)" class="p-2 glass text-red-500 rounded-lg text-[8px] font-black">БАН</button>
+                <!-- АВТОРИЗАЦИЯ -->
+                <div v-else-if="view === 'auth'" key="auth" class="max-w-md mx-auto py-10">
+                    <div class="glass p-10 rounded-[3.5rem] text-center animate__animated animate__zoomIn">
+                        <h2 class="font-brand text-2xl uppercase mb-8">Вход</h2>
+                        <input v-model="auth.name" type="text" placeholder="Твой ник" class="w-full p-5 glass rounded-2xl mb-4 text-center text-white font-bold">
+                        <button @click="startAuth" class="btn-prime w-full py-5 text-[10px] uppercase">Продолжить</button>
+                        <div v-if="verifyCode" class="mt-8">
+                            <div class="text-4xl font-brand text-[#00ffaa] mb-2 tracking-widest">{{verifyCode}}</div>
+                            <p class="text-[9px] opacity-40 uppercase">Напиши код боту: @your_vape_bot</p>
                         </div>
                     </div>
                 </div>
@@ -264,9 +280,9 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 createApp({
     data() {
         return {
-            ageVerified: localStorage.getItem('vape_age_v11') === 'true',
+            ageVerified: localStorage.getItem('vape_age_v12') === 'true',
             loading: true, view: 'home', profileTab: 'my',
-            user: JSON.parse(localStorage.getItem('vape_user_v11')) || null,
+            user: JSON.parse(localStorage.getItem('vape_user_v12')) || null,
             items: [], dbUsers: [], userMap: {},
             settings: { announcement: '' },
             categories: ['Все', 'Поды', 'Моды', 'Жидкости', 'Запчасти', 'Расходники'],
@@ -278,9 +294,8 @@ createApp({
         }
     },
     computed: {
-        isAdmin() { return this.user && (this.user.is_admin || this.user.tg_id == MASTER_ADMIN_ID); },
         marketVolume() { return this.items.reduce((sum, i) => sum + (i.price || 0), 0); },
-        hotItems() { return this.items.slice(0, 5); },
+        hotItems() { return this.items.filter(i => i.status !== 'sold').slice(0, 5); },
         sortedItems() {
             const q = this.searchQuery.toLowerCase().trim();
             return this.items.filter(i => {
@@ -318,11 +333,15 @@ createApp({
                 const map = {};
                 this.dbUsers.forEach(u => map[u.id] = u);
                 this.userMap = map;
+
                 if (this.user) {
                     const fresh = this.dbUsers.find(u => u.id === this.user.id);
-                    if (fresh) { 
-                        this.user = fresh; 
-                        localStorage.setItem('vape_user_v11', JSON.stringify(this.user)); 
+                    if (fresh) {
+                        this.user = fresh;
+                        this.editUser.name = fresh.name;
+                        this.editUser.bio = fresh.bio || '';
+                        localStorage.setItem('vape_user_v12', JSON.stringify(this.user));
+                        if (fresh.is_banned) this.logout();
                     }
                 }
             } catch (e) { console.error(e) }
@@ -331,7 +350,40 @@ createApp({
             const { data } = await client.from('settings').select('*').eq('id', 1).single();
             if (data) this.settings = data;
         },
-        verifyAge() { this.ageVerified = true; localStorage.setItem('vape_age_v11', 'true'); this.init(); },
+        getRankName(r) {
+            if (r === 1) return 'Админ';
+            if (r === 2) return 'Старший админ';
+            if (r === 3) return 'Главный админ';
+            return 'Пользователь';
+        },
+        verifyAge() { this.ageVerified = true; localStorage.setItem('vape_age_v12', 'true'); this.init(); },
+        async changeRank(u, r) {
+            await client.from('users').update({ rank: r, is_admin: r >= 1 }).eq('id', u.id);
+            alert('Ранг изменен!');
+            await this.fetchData();
+        },
+        async saveProfile() {
+            await client.from('users').update({ name: this.editUser.name, bio: this.editUser.bio }).eq('id', this.user.id);
+            alert("Настройки сохранены! ✨");
+            await this.fetchData();
+        },
+        async handleAvatarUpload(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = async (f) => {
+                const img = new Image(); img.src = f.target.result;
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    const scale = 300 / img.width;
+                    canvas.width = 300; canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, 300, canvas.height);
+                    const b64 = canvas.toDataURL('image/jpeg', 0.8);
+                    await client.from('users').update({ avatar: b64 }).eq('id', this.user.id);
+                    await this.fetchData();
+                }
+            };
+            reader.readAsDataURL(file);
+        },
         async startAuth() {
             this.verifyCode = Math.floor(1000 + Math.random() * 9000).toString();
             const poll = setInterval(async () => {
@@ -344,11 +396,11 @@ createApp({
         async finalizeAuth(tg) {
             let { data: user } = await client.from('users').select('*').eq('tg_id', tg.id).single();
             if (!user) {
-                const { data: newUser } = await client.from('users').insert([{ tg_id: tg.id, name: this.auth.name, is_admin: tg.id == MASTER_ADMIN_ID }]).select().single();
+                const { data: newUser } = await client.from('users').insert([{ tg_id: tg.id, name: this.auth.name, rank: tg.id == MASTER_ADMIN_ID ? 3 : 0, is_admin: tg.id == MASTER_ADMIN_ID }]).select().single();
                 user = newUser;
             }
             this.user = user;
-            localStorage.setItem('vape_user_v11', JSON.stringify(this.user));
+            localStorage.setItem('vape_user_v12', JSON.stringify(this.user));
             this.view = 'home'; await this.fetchData();
         },
         async toggleFavorite(id) {
@@ -357,15 +409,13 @@ createApp({
             if (favs.includes(id)) favs = favs.filter(f => f !== id);
             else favs.push(id);
             await client.from('users').update({ favorites: favs }).eq('id', this.user.id);
-            this.user.favorites = favs;
-            await this.fetchData();
+            this.user.favorites = favs; await this.fetchData();
         },
         isFavorite(id) { return this.user && this.user.favorites && this.user.favorites.includes(id); },
         async deleteItem(id) { if(confirm('Удалить?')) { await client.from('items').delete().eq('id', id); await this.fetchData(); } },
         openItem(item) { this.selectedItem = item; this.activeImg = item.img; this.view = 'product'; window.scrollTo(0,0); },
         contactSeller() { window.open(`https://t.me/${this.selectedItem.tg_user.replace('@', '')}`, '_blank'); },
-        logout() { this.user = null; localStorage.removeItem('vape_user_v11'); this.view = 'home'; },
-        
+        logout() { this.user = null; localStorage.removeItem('vape_user_v12'); this.view = 'home'; },
         triggerFile(n) { this.$refs['file'+n][0].click() },
         getNewImg(n) { return n === 1 ? this.newItem.img : n === 2 ? this.newItem.img2 : this.newItem.img3; },
         handleFileUpload(e, n) {
@@ -392,7 +442,6 @@ createApp({
             this.publishing = false; this.view = 'home'; await this.fetchData();
             this.newItem = { title: '', category: 'Поды', price: null, city: '', desc_text: '', tg_user: '', img: '', img2: '', img3: '' };
         },
-        // АДМИНКА
         async giveStrike(u) {
             const reason = prompt(`Причина варна для ${u.name}:`);
             if(!reason) return;
