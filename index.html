@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Барахолка | Pro Edition</title>
+    <title>Барахолка | Final 2025</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2300ffaa%22/><text y=%22.85em%22 x=%2250%%22 font-size=%2270%22 font-weight=%22900%22 text-anchor=%22middle%22 font-family=%22Arial%22 fill=%22black%22>B</text></svg>">
 
@@ -18,67 +18,58 @@
         body { font-family: 'Manrope', sans-serif; background-color: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .font-brand { font-family: 'Unbounded', sans-serif; }
         .glass { background: var(--glass); backdrop-filter: blur(50px); border: 1px solid var(--border); }
+        .neon-text { text-shadow: 0 0 10px rgba(0, 255, 170, 0.5); }
         .btn-neon { background: var(--neon); color: #000; font-weight: 800; transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1); border-radius: 20px; }
         .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 255, 170, 0.3); }
-
-        /* ЖЕСТКИЙ ФИКС ФИЛЬТРОВ ДЛЯ ПК */
-        input, select, textarea { 
-            background: #111 !important; border: 1px solid var(--border) !important; 
-            color: #fff !important; outline: none !important; border-radius: 20px !important; padding: 12px 18px !important;
-            appearance: none !important;
-        }
-        select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
-            background-repeat: no-repeat !important; background-position: right 15px center !important; background-size: 14px !important;
-        }
-        option { background: #050505; color: white; padding: 10px; }
-
-        .nav-item { transition: 0.4s; opacity: 0.4; cursor: pointer; color: var(--text); text-align: center; }
+        input, select, textarea { background: rgba(255,255,255,0.05) !important; border: 1px solid var(--border) !important; color: #fff !important; outline: none; border-radius: 20px !important; padding: 12px 18px !important; }
+        option { background: #111; color: white; }
+        .nav-item { transition: 0.4s; opacity: 0.4; cursor: pointer; text-align: center; }
         .nav-item.active { opacity: 1; color: var(--neon); transform: translateY(-5px); }
         .creator-ring { border: 3px solid #ff3366 !important; box-shadow: 0 0 20px rgba(255, 51, 102, 0.3); }
         [v-cloak] { display: none; }
-        .auth-code-box { font-size: clamp(2rem, 12vw, 4.5rem); font-weight: 900; letter-spacing: 4px; color: #fff; text-shadow: 0 0 20px var(--neon); background: rgba(255,255,255,0.03); border-radius: 24px; padding: 20px; width: 100%; text-align: center; font-family: 'Unbounded', sans-serif; }
+        .auth-code-box { font-size: clamp(2rem, 12vw, 4.5rem); font-weight: 900; color: #fff; text-shadow: 0 0 20px var(--neon); background: rgba(255,255,255,0.03); border-radius: 24px; padding: 20px; text-align: center; font-family: 'Unbounded', sans-serif; }
     </style>
 </head>
 <body class="pb-36">
 
 <div id="app" v-cloak>
     
-    <!-- 1. AGE GATE -->
-    <div v-if="!ageVerified" class="fixed inset-0 z-[2000] bg-[#050505] flex items-center justify-center p-8 text-center">
+    <!-- AGE GATE -->
+    <div v-if="!ageVerified" class="fixed inset-0 z-[2000] bg-black flex items-center justify-center p-8 text-center">
         <div class="animate__animated animate__zoomIn max-w-xs w-full">
             <div class="w-24 h-24 bg-[#00ffaa] rounded-3xl mx-auto mb-8 flex items-center justify-center text-black text-5xl font-black shadow-[0_0_40px_rgba(0,255,170,0.4)]">B</div>
-            <h1 class="font-brand text-3xl mb-4 text-white italic tracking-tighter uppercase">Барахолка</h1>
-            <p class="text-gray-500 text-sm mb-12">Вам исполнилось 18 лет?</p>
+            <h1 class="font-brand text-3xl mb-4 text-white italic tracking-tighter">БАРАХОЛКА</h1>
             <button @click="verifyAge" class="btn-neon w-full py-6 text-sm tracking-widest uppercase font-black">Да, мне есть 18</button>
         </div>
     </div>
 
     <div v-else>
         
-        <!-- Загрузка -->
-        <div v-if="loading" class="fixed inset-0 z-[1500] bg-[#050505] flex flex-col items-center justify-center">
+        <!-- Loading -->
+        <div v-if="loading" class="fixed inset-0 z-[1500] bg-black flex flex-col items-center justify-center">
             <div class="w-12 h-12 border-4 border-[#00ffaa]/20 border-t-[#00ffaa] rounded-full animate-spin mb-4"></div>
-            <div class="text-[#00ffaa] font-brand italic text-[10px] animate-pulse">ПОДКЛЮЧЕНИЕ...</div>
+            <div class="text-[#00ffaa] font-brand italic text-[10px] animate-pulse">СИНХРОНИЗАЦИЯ...</div>
         </div>
 
-        <!-- Уведомления -->
-        <div class="fixed top-6 right-6 z-[1600] space-y-3 max-w-[280px]">
-            <transition-group name="animate__animated" enter-active-class="animate__fadeInRight" leave-active-class="animate__fadeOutRight">
-                <div v-for="t in toasts" :key="t.id" class="glass px-6 py-4 rounded-3xl border-l-4 border-[#00ffaa] text-[11px] font-bold shadow-2xl">
-                    {{ t.msg }}
-                </div>
-            </transition-group>
+        <!-- Warning for Strikes -->
+        <div v-if="user && user.strikes > 0 && !strikeNoticeClosed" class="fixed inset-0 z-[1800] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 text-center">
+            <div class="glass p-8 rounded-[3rem] border-red-500 max-w-sm w-full animate__animated animate__shakeX">
+                <div class="text-5xl mb-4">⚠️</div>
+                <h2 class="font-brand text-xl text-red-500 mb-2 uppercase">Предупреждение</h2>
+                <p class="text-white text-lg font-black mb-4">Варны: {{user.strikes}} / 3</p>
+                <div class="bg-red-500/10 p-4 rounded-2xl mb-8"><p class="text-sm italic text-gray-200">"{{user.strike_reason || 'Нарушение правил'}}"</p></div>
+                <button @click="strikeNoticeClosed = true" class="w-full py-4 glass rounded-2xl text-[10px] font-black uppercase">Я понял</button>
+            </div>
         </div>
 
-        <!-- ШАПКА -->
+        <!-- HEADER -->
         <header class="sticky top-0 z-50 glass border-b px-4 py-4">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div @click="view = 'home'" class="flex items-center gap-3 cursor-pointer">
-                    <div class="logo-b">B</div>
+                    <div class="w-10 h-10 bg-[#00ffaa] rounded-xl flex items-center justify-center text-black font-black text-xl">B</div>
                     <span class="font-brand text-xl italic tracking-tighter uppercase">БАРАХОЛКА</span>
                 </div>
-                <div v-if="user" @click="view = 'profile'" class="w-10 h-10 rounded-xl overflow-hidden border border-[#00ffaa]/30">
+                <div v-if="user" @click="view = 'profile'" class="w-10 h-10 rounded-xl overflow-hidden border border-[#00ffaa]/20">
                     <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-full h-full object-cover">
                 </div>
                 <button v-else @click="view = 'auth'" class="text-[#00ffaa] text-xs font-black uppercase">Вход</button>
@@ -89,92 +80,91 @@
             <transition name="animate__animated" enter-active-class="animate__fadeIn" mode="out-in">
 
                 <!-- ВИТРИНА -->
-                <div v-if="view === 'home'" key="home">
+                <div v-if="view === 'home'">
                     <div class="mb-8 flex flex-col gap-4">
-                        <div class="relative">
-                            <input v-model="searchQuery" type="text" placeholder="Поиск товара или города..." class="w-full !pl-12 glass">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-30">🔍</span>
-                        </div>
+                        <input v-model="searchQuery" type="text" placeholder="Поиск товара или города..." class="w-full !pl-12 glass">
                         <div class="flex gap-2">
-                            <select v-model="filters.cat" class="flex-1">
-                                <option v-for="c in categories" :value="c">{{c}}</option>
-                            </select>
-                            <select v-model="sortBy" class="flex-1">
-                                <option value="new">Новинки</option>
-                                <option value="cheap">Дешевле</option>
-                                <option value="expensive">Дороже</option>
-                            </select>
+                            <select v-model="filters.cat" class="glass flex-1 text-xs font-bold py-4 px-4"><option v-for="c in categories" :value="c">{{c}}</option></select>
+                            <select v-model="sortBy" class="glass flex-1 text-xs font-bold py-4 px-4"><option value="new">Новинки</option><option value="cheap">Дешевле</option><option value="expensive">Дороже</option></select>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div v-for="item in sortedItems" :key="item.id" @click="openItem(item)" class="glass rounded-[2.5rem] p-3 relative group cursor-pointer hover:scale-[1.02] transition-all hover:border-[#00ffaa]/50">
-                            <button @click.stop="toggleFavorite(item.id)" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full glass flex items-center justify-center text-xs shadow-lg">
-                                {{ isFavorite(item.id) ? '❤️' : '🤍' }}
-                            </button>
-                            <button v-if="isAdmin" @click.stop="deleteItem(item.id)" class="absolute top-4 left-4 z-20 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white text-[10px]">✕</button>
-                            <div class="aspect-square rounded-[1.5rem] overflow-hidden mb-3 bg-black/20">
-                                <img :src="item.img" class="w-full h-full object-cover">
-                            </div>
+                        <div v-for="item in sortedItems" :key="item.id" @click="openItem(item)" class="glass rounded-[2.5rem] p-3 relative group cursor-pointer hover:scale-[1.02] transition-all">
+                            <button @click.stop="toggleFavorite(item.id)" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full glass flex items-center justify-center text-xs">{{ isFavorite(item.id) ? '❤️' : '🤍' }}</button>
+                            <button v-if="isAdmin" @click.stop="deleteItem(item.id)" class="absolute top-4 left-4 z-20 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white text-xs">✕</button>
+                            <div class="aspect-square rounded-[1.5rem] overflow-hidden mb-3 bg-black/20"><img :src="item.img" class="w-full h-full object-cover"></div>
                             <h3 class="text-[12px] font-extrabold truncate uppercase px-1">{{item.title}}</h3>
                             <div class="flex justify-between items-center mt-1 px-1">
                                 <span class="text-[#00ffaa] font-brand text-[10px]">{{item.price}} ₽</span>
-                                <div class="flex gap-1">
-                                    <span v-if="getUserCrown(item.user_id)">👑</span>
-                                    <span v-if="isUserVerified(item.user_id)">✅</span>
+                                <div class="flex gap-1"><span v-if="getUserCrown(item.user_id)">👑</span><span v-if="isUserVerified(item.user_id)">✅</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- АДМИНКА -->
+                <div v-else-if="view === 'admin' && isAdmin" class="max-w-4xl mx-auto pb-10">
+                    <div class="flex justify-between items-center mb-8 px-2">
+                        <h2 class="font-brand text-2xl italic text-[#ff3366] uppercase">Управление</h2>
+                        <button @click="view = 'profile'" class="text-xs glass px-4 py-2 rounded-xl">Назад</button>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 px-2">
+                        <div v-for="u in dbUsers" :key="u.id" class="glass p-5 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-5 border-l-4" :class="u.tg_id == MASTER_ADMIN_ID ? 'border-[#ff3366]' : 'border-transparent'">
+                            <div class="flex items-center gap-5 w-full">
+                                <img :src="u.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.name}`" class="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/5">
+                                <div class="flex-1">
+                                    <div class="text-base font-black flex items-center gap-2">{{u.name}} <span v-if="u.has_crown">👑</span><span v-if="u.is_verified">✅</span></div>
+                                    <div class="text-[11px] opacity-40 uppercase">ID: {{u.tg_id}} • Варны: {{u.strikes || 0}}/3</div>
+                                    <div v-if="u.tg_id == MASTER_ADMIN_ID" class="text-[9px] text-[#ff3366] font-black uppercase mt-1">ОСНОВАТЕЛЬ</div>
                                 </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-center md:justify-end">
+                                <template v-if="isCreator && u.tg_id != MASTER_ADMIN_ID">
+                                    <button @click="toggleCrown(u)" class="w-10 h-10 glass rounded-xl text-lg flex items-center justify-center">{{ u.has_crown ? '👑' : '⚪' }}</button>
+                                    <button @click="toggleVerify(u)" class="w-10 h-10 glass rounded-xl text-lg flex items-center justify-center">{{ u.is_verified ? '✅' : '⚪' }}</button>
+                                    <button @click="toggleAdminRole(u)" class="px-4 py-2 glass rounded-xl text-[10px] font-black" :class="u.is_admin ? 'text-red-500' : 'text-blue-500'">{{ u.is_admin ? 'СНЯТЬ АДМ' : 'ДАТЬ АДМ' }}</button>
+                                </template>
+                                <button @click="giveStrike(u)" v-if="u.tg_id != MASTER_ADMIN_ID" class="px-4 py-2 glass text-orange-500 text-[10px] font-black">ВАРН</button>
+                                <button @click="removeStrike(u)" v-if="u.tg_id != MASTER_ADMIN_ID" class="w-10 h-10 glass text-green-500 rounded-xl flex items-center justify-center">↺</button>
+                                <button v-if="u.tg_id != user.tg_id && u.tg_id != MASTER_ADMIN_ID" @click="banUser(u)" class="px-4 py-2 bg-red-600/20 text-red-500 rounded-xl text-[10px] font-black">БАН</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ПРОФИЛЬ -->
-                <div v-else-if="view === 'profile'" class="max-w-2xl mx-auto pb-10" key="profile">
-                    <div v-if="isAdmin" @click="view = 'admin'" class="mb-6 p-6 rounded-[2.5rem] bg-[#ff3366] text-white text-center font-black text-xs uppercase shadow-xl cursor-pointer">
-                        ОТКРЫТЬ КОМАНДНЫЙ ЦЕНТР
-                    </div>
-                    <div class="glass p-8 rounded-[4rem] text-center border-t-8 border-[#00ffaa] shadow-2xl relative">
+                <div v-else-if="view === 'profile'" class="max-w-2xl mx-auto pb-10">
+                    <div v-if="isAdmin" @click="view = 'admin'" class="mb-6 p-6 rounded-[2.5rem] bg-[#ff3366] text-white text-center font-black text-xs uppercase cursor-pointer">🛡️ ПАНЕЛЬ УПРАВЛЕНИЯ</div>
+                    <div class="glass p-10 rounded-[4rem] text-center border-t-8 border-[#00ffaa] shadow-2xl relative">
                         <div class="relative inline-block mb-8">
-                            <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-40 h-40 rounded-[3.5rem] object-cover ring-4 ring-[#00ffaa]/20 shadow-xl">
-                            <label class="absolute -bottom-2 -right-2 w-12 h-12 bg-[#00ffaa] rounded-2xl flex items-center justify-center cursor-pointer shadow-xl border-4 border-[#050505]">
+                            <img :src="user.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`" class="w-40 h-40 rounded-[3.5rem] object-cover ring-4 ring-[#00ffaa]/20">
+                            <label class="absolute -bottom-2 -right-2 w-12 h-12 bg-[#00ffaa] rounded-2xl flex items-center justify-center cursor-pointer shadow-xl border-4 border-[#050505] hover:scale-110 transition-all">
                                 <span class="text-xl">📸</span>
                                 <input type="file" @change="handleAvatarUpload" class="hidden">
                             </label>
                         </div>
-                        <div class="mb-8">
-                            <h3 class="text-3xl font-black italic uppercase flex items-center justify-center gap-3">
-                                {{user.name}} <span v-if="user.has_crown">👑</span><span v-if="user.is_verified">✅</span>
-                            </h3>
-                            <button @click="editingProfile = true" class="text-[#00ffaa] text-[10px] font-bold uppercase mt-4">Сменить ник</button>
-                        </div>
-                        <div v-if="editingProfile" class="mb-8 space-y-4 max-w-xs mx-auto">
-                            <input v-model="editName" type="text" class="w-full text-center text-sm font-bold glass">
-                            <div class="flex gap-2">
-                                <button @click="updateProfile" class="btn-neon flex-1 py-4 text-[10px] font-black">ОК</button>
-                                <button @click="editingProfile = false" class="glass flex-1 py-4 text-[10px] font-bold">НЕТ</button>
-                            </div>
-                        </div>
+                        <h3 class="text-3xl font-black italic uppercase tracking-tighter mb-8">{{user.name}}</h3>
                         <div class="flex justify-center gap-4 mb-8">
-                            <button @click="profileTab = 'my'" :class="profileTab === 'my' ? 'bg-[#00ffaa] text-black shadow-lg' : 'glass text-gray-400'" class="px-6 py-3 rounded-2xl text-[10px] font-black uppercase transition-all">Мои лоты</button>
-                            <button @click="profileTab = 'fav'" :class="profileTab === 'fav' ? 'bg-pink-500 text-white shadow-lg' : 'glass text-gray-400'" class="px-6 py-3 rounded-2xl text-[10px] font-black uppercase transition-all">Избранное ❤️</button>
+                            <button @click="profileTab = 'my'" :class="profileTab === 'my' ? 'bg-[#00ffaa] text-black' : 'glass text-gray-400'" class="px-6 py-3 rounded-2xl text-[10px] font-black uppercase transition-all">Мои лоты</button>
+                            <button @click="profileTab = 'fav'" :class="profileTab === 'fav' ? 'bg-pink-500 text-white' : 'glass text-gray-400'" class="px-6 py-3 rounded-2xl text-[10px] font-black uppercase transition-all">Избранное ❤️</button>
                         </div>
                         <button @click="logout" class="text-red-500 font-black uppercase text-[10px] tracking-widest opacity-50">Выход</button>
                     </div>
-                    <!-- Список Моих Лотов -->
                     <div class="mt-12 space-y-4">
-                        <div v-if="profileTab === 'my'" class="space-y-4 animate__animated animate__fadeIn">
-                            <div v-for="item in myItems" :key="item.id" class="glass p-5 rounded-[2.5rem] flex items-center justify-between">
+                        <div v-if="profileTab === 'my'">
+                            <div v-for="item in myItems" :key="item.id" class="glass p-5 rounded-[2.5rem] flex items-center justify-between mb-4">
                                 <div class="flex items-center gap-6">
-                                    <img :src="item.img" class="w-16 h-16 rounded-[1.5rem] object-cover shadow-xl">
-                                    <h4 class="text-sm font-extrabold uppercase truncate w-32">{{item.title}}</h4>
+                                    <img :src="item.img" class="w-16 h-16 rounded-2xl object-cover shadow-xl">
+                                    <h4 class="text-sm font-extrabold uppercase">{{item.title}}</h4>
                                 </div>
                                 <button @click="deleteItem(item.id)" class="text-red-500 font-black text-xs px-4">УДАЛИТЬ</button>
                             </div>
                         </div>
-                        <div v-else class="grid grid-cols-2 gap-4 animate__animated animate__fadeIn">
+                        <div v-else class="grid grid-cols-2 gap-4">
                             <div v-for="item in favoriteItems" :key="item.id" @click="openItem(item)" class="glass p-3 rounded-[2rem] text-center relative">
                                 <img :src="item.img" class="w-full aspect-square rounded-2xl object-cover mb-2">
-                                <div class="text-[10px] font-extrabold uppercase truncate px-1">{{item.title}}</div>
+                                <div class="text-[10px] font-extrabold uppercase truncate">{{item.title}}</div>
                                 <button @click.stop="toggleFavorite(item.id)" class="mt-2 text-red-500 text-[10px] font-black uppercase">УБРАТЬ ❤️</button>
                             </div>
                         </div>
@@ -182,86 +172,72 @@
                 </div>
 
                 <!-- ДОБАВЛЕНИЕ ЛОТА (3 ФОТО) -->
-                <div v-else-if="view === 'add'" class="max-w-xl mx-auto pb-10" key="add">
-                    <div class="glass p-8 rounded-[4.5rem] shadow-2xl border-t-8 border-[#00ffaa]">
+                <div v-else-if="view === 'add'" class="max-w-xl mx-auto pb-10">
+                    <div class="glass p-12 rounded-[4.5rem] shadow-2xl border-t-8 border-[#00ffaa]">
                         <h2 class="font-brand text-2xl mb-12 italic text-center uppercase tracking-tighter">Новый лот</h2>
-                        <div class="space-y-6">
-                            <!-- Слот для 3-х фото -->
-                            <div class="grid grid-cols-3 gap-3">
+                        <div class="space-y-6 text-center">
+                            <div class="grid grid-cols-3 gap-3 mb-6">
                                 <div v-for="n in [1,2,3]" :key="n" @click="triggerFile(n)" class="aspect-square glass rounded-2xl flex items-center justify-center cursor-pointer overflow-hidden border-2 border-dashed border-white/10 group">
                                     <img v-if="getNewImg(n)" :src="getNewImg(n)" class="w-full h-full object-cover">
-                                    <span v-else class="text-[10px] font-black opacity-30 group-hover:opacity-100">ФОТО {{n}}</span>
+                                    <span v-else class="text-[10px] font-black opacity-30 group-hover:opacity-100 uppercase">ФОТО {{n}}</span>
                                     <input type="file" :ref="'file'+n" @change="e => handleFileUpload(e, n)" class="hidden">
                                 </div>
                             </div>
-                            
-                            <input v-model="newItem.title" type="text" placeholder="Название (Geekvape, Xros...)">
+                            <input v-model="newItem.title" type="text" placeholder="Название товара">
                             <div class="grid grid-cols-2 gap-5">
-                                <select v-model="newItem.category" class="glass font-bold text-[10px] uppercase">
-                                    <option v-for="c in categories.slice(1)" :value="c">{{c}}</option>
-                                </select>
+                                <select v-model="newItem.category" class="glass font-bold text-xs"><option v-for="c in categories.slice(1)" :value="c">{{c}}</option></select>
                                 <input v-model.number="newItem.price" type="number" placeholder="Цена ₽">
                             </div>
                             <input v-model="newItem.city" type="text" placeholder="Твой город">
-                            <input v-model="newItem.tg_user" type="text" placeholder="Ник в Telegram без @">
+                            <input v-model="newItem.tg_user" type="text" placeholder="Ник в Telegram (без @)">
                             <textarea v-model="newItem.desc_text" placeholder="Описание товара..." class="h-44 leading-relaxed"></textarea>
-                            
-                            <button @click="createListing" :disabled="publishing" class="btn-neon w-full py-7 rounded-[2.5rem] text-xs font-black shadow-xl uppercase">
-                                {{ publishing ? 'ПУБЛИКАЦИЯ...' : 'ОПУБЛИКОВАТЬ В ОБЛАКО' }}
-                            </button>
+                            <button @click="createListing" :disabled="publishing" class="btn-neon w-full py-7 rounded-[2.5rem] text-xs font-black uppercase shadow-xl tracking-widest">{{ publishing ? 'ОПУБЛИКОВКА...' : 'ОПУБЛИКОВАТЬ' }}</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- ПРОСМОТР ТОВАРА С ГАЛЕРЕЕЙ -->
-                <div v-else-if="view === 'product' && selectedItem" class="max-w-5xl mx-auto pb-10" key="product">
+                <!-- ТОВАР (ГАЛЕРЕЯ) -->
+                <div v-else-if="view === 'product' && selectedItem" class="max-w-5xl mx-auto pb-10 px-2">
                     <button @click="view = 'home'" class="mb-10 text-[10px] font-black text-gray-500 uppercase flex items-center gap-3"><span>←</span> Назад</button>
                     <div class="flex flex-col md:flex-row gap-16 items-start">
                         <div class="flex-1 w-full space-y-4">
-                            <div class="relative">
-                                <img :src="activeImg || selectedItem.img" class="w-full aspect-square object-cover rounded-[4rem] shadow-2xl ring-1 ring-white/10" :class="{'grayscale opacity-40': selectedItem.status === 'sold'}">
-                                <div v-if="selectedItem.status === 'sold'" class="absolute inset-0 flex items-center justify-center bg-black/60 rounded-[4rem] text-4xl text-red-500 font-brand -rotate-12 border-4 border-red-500 p-4">ПРОДАНО</div>
-                            </div>
-                            <!-- Галерея из 3-х фото -->
+                            <div class="relative"><img :src="activeImg || selectedItem.img" class="w-full aspect-square object-cover rounded-[4rem] shadow-2xl ring-1 ring-white/10"></div>
                             <div class="flex gap-4 justify-center">
-                                <img v-if="selectedItem.img" :src="selectedItem.img" @click="activeImg = selectedItem.img" class="w-20 h-20 rounded-2xl object-cover cursor-pointer hover:scale-105 transition-all border-2 border-transparent" :class="{'!border-[#00ffaa]': activeImg == selectedItem.img}">
-                                <img v-if="selectedItem.img2" :src="selectedItem.img2" @click="activeImg = selectedItem.img2" class="w-20 h-20 rounded-2xl object-cover cursor-pointer hover:scale-105 transition-all border-2 border-transparent" :class="{'!border-[#00ffaa]': activeImg == selectedItem.img2}">
-                                <img v-if="selectedItem.img3" :src="selectedItem.img3" @click="activeImg = selectedItem.img3" class="w-20 h-20 rounded-2xl object-cover cursor-pointer hover:scale-105 transition-all border-2 border-transparent" :class="{'!border-[#00ffaa]': activeImg == selectedItem.img3}">
+                                <img v-if="selectedItem.img" :src="selectedItem.img" @click="activeImg = selectedItem.img" class="w-20 h-20 rounded-2xl object-cover cursor-pointer border-2" :class="activeImg == selectedItem.img ? 'border-[#00ffaa]' : 'border-transparent'">
+                                <img v-if="selectedItem.img2" :src="selectedItem.img2" @click="activeImg = selectedItem.img2" class="w-20 h-20 rounded-2xl object-cover cursor-pointer border-2" :class="activeImg == selectedItem.img2 ? 'border-[#00ffaa]' : 'border-transparent'">
+                                <img v-if="selectedItem.img3" :src="selectedItem.img3" @click="activeImg = selectedItem.img3" class="w-20 h-20 rounded-2xl object-cover cursor-pointer border-2" :class="activeImg == selectedItem.img3 ? 'border-[#00ffaa]' : 'border-transparent'">
                             </div>
                         </div>
-                        <div class="flex-1 py-4 w-full">
-                            <div class="flex gap-4 mb-8">
-                                <span class="px-6 py-2 glass rounded-full text-[10px] text-[#00ffaa] font-black uppercase tracking-widest neon-text">{{selectedItem.category}}</span>
+                        <div class="flex-1 py-4 w-full text-center md:text-left">
+                            <div class="flex flex-wrap gap-4 mb-8 justify-center md:justify-start">
+                                <span class="px-6 py-2 glass rounded-full text-[10px] text-[#00ffaa] font-black uppercase">{{selectedItem.category}}</span>
                                 <span v-if="isUserVerified(selectedItem.user_id)" class="px-6 py-2 glass rounded-full text-[10px] text-blue-400 font-black uppercase tracking-widest">Проверено ✅</span>
                             </div>
-                            <h2 class="text-5xl font-black mb-4 italic tracking-tighter uppercase leading-none">{{selectedItem.title}}</h2>
+                            <h2 class="text-5xl font-black mb-4 italic uppercase leading-none tracking-tighter">{{selectedItem.title}}</h2>
                             <div class="text-4xl font-brand text-[#00ffaa] mb-12 neon-text">{{selectedItem.price}} ₽</div>
-                            <div class="glass p-8 rounded-[3rem] mb-12 flex items-center justify-between border-l-8 border-[#00ffaa]">
-                                <div class="flex items-center gap-5">
-                                    <img :src="getSellerAvatar(selectedItem.user_id)" class="w-16 h-16 rounded-[1.5rem] object-cover ring-2 ring-white/5">
-                                    <div class="text-sm font-black uppercase italic tracking-tight">{{selectedItem.seller_name}} <span v-if="getUserCrown(selectedItem.user_id)">👑</span></div>
-                                </div>
+                            <div class="glass p-8 rounded-[3rem] mb-12 flex items-center justify-between border-l-8 border-[#00ffaa] shadow-2xl">
+                                <div class="flex items-center gap-5"><img :src="getSellerAvatar(selectedItem.user_id)" class="w-16 h-16 rounded-[1.5rem] object-cover ring-2 ring-white/5"><div class="text-sm font-black uppercase italic">{{selectedItem.seller_name}} <span v-if="getUserCrown(selectedItem.user_id)">👑</span></div></div>
                             </div>
-                            <p class="text-base text-gray-400 leading-relaxed italic mb-12 opacity-80 font-medium">{{selectedItem.desc_text}}</p>
-                            <button @click="contactSeller" :disabled="selectedItem.status === 'sold'" class="btn-neon w-full py-8 rounded-[3rem] text-[11px] font-black uppercase shadow-2xl">Написать продавцу</button>
+                            <p class="text-base text-gray-400 leading-relaxed italic mb-12 opacity-80">{{selectedItem.desc_text}}</p>
+                            <button @click="contactSeller" class="btn-neon w-full py-8 rounded-[3rem] text-[11px] font-black uppercase shadow-2xl tracking-widest">Связаться в Telegram</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- ВХОД -->
-                <div v-else-if="view === 'auth'" class="max-w-md mx-auto py-20 text-center px-4" key="auth">
+                <div v-else-if="view === 'auth'" class="max-w-md mx-auto py-20 text-center px-4">
                     <div class="glass p-14 rounded-[5rem] border-b-8 border-sky-500 shadow-2xl">
-                        <h2 class="font-brand text-3xl mb-8 italic uppercase tracking-tighter leading-none">Вход</h2>
+                        <h2 class="font-brand text-3xl mb-4 italic uppercase">Вход</h2>
                         <div v-if="authStep === 'input'" class="space-y-8">
-                            <input v-model="auth.name" type="text" placeholder="Введите ник для сайта" class="w-full text-center text-sm font-bold glass">
-                            <button @click="startAuth" class="btn-neon w-full py-7 rounded-[3rem] text-xs font-black">ПРОДОЛЖИТЬ</button>
+                            <input v-model="auth.name" type="text" placeholder="Введите ник на сайте" class="w-full text-center text-sm font-bold glass">
+                            <button @click="startAuth" class="btn-neon w-full py-7 rounded-[3rem] text-xs font-black uppercase">Продолжить</button>
                         </div>
                         <div v-else class="space-y-10 animate__animated animate__fadeIn">
                             <div class="bg-white/5 p-10 rounded-[4rem] border border-sky-500/20 shadow-inner overflow-hidden">
                                 <div class="auth-code-box neon-text tracking-tighter">{{verifyCode}}</div>
-                                <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest leading-relaxed">Отправь этот код боту: <br> <span class="text-sky-400">@your_vape_bot</span></p>
+                                <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest leading-relaxed">Отправь боту код: <br> <span class="text-sky-400">@your_vape_bot</span></p>
                             </div>
-                            <a href="https://t.me/your_vape_bot" target="_blank" class="block w-full py-7 rounded-[3rem] bg-sky-600 text-white font-black text-xs shadow-2xl">В Telegram</a>
+                            <a href="https://t.me/your_vape_bot" target="_blank" class="block w-full py-7 rounded-[3rem] bg-sky-600 text-white font-black text-xs shadow-2xl">Открыть Telegram</a>
                         </div>
                     </div>
                 </div>
@@ -271,18 +247,9 @@
 
         <!-- НИЖНЕЕ МЕНЮ -->
         <nav class="fixed bottom-8 inset-x-8 glass px-10 py-6 flex justify-between rounded-[3.5rem] max-w-lg mx-auto shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-3xl border border-white/10 z-[100]">
-            <button @click="view = 'home'" :class="{active: view === 'home'}" class="nav-item flex flex-col items-center gap-1">
-                <span class="text-2xl">🏠</span>
-                <span class="text-[9px] font-black uppercase tracking-widest">Витрина</span>
-            </button>
-            <button @click="user ? view = 'add' : view = 'auth'" :class="{active: view === 'add'}" class="nav-item flex flex-col items-center gap-1">
-                <span class="text-2xl">➕</span>
-                <span class="text-[9px] font-black uppercase tracking-widest">Продать</span>
-            </button>
-            <button @click="user ? (view = 'profile' || view === 'admin') : view = 'auth'" :class="{active: view === 'profile' || view === 'admin'}" class="nav-item flex flex-col items-center gap-1">
-                <span class="text-2xl">👤</span>
-                <span class="text-[9px] font-black uppercase tracking-widest">Профиль</span>
-            </button>
+            <button @click="view = 'home'" :class="{active: view === 'home'}" class="nav-item flex flex-col items-center gap-1"><span class="text-2xl">🏠</span><span class="text-[9px] font-black uppercase tracking-widest">Витрина</span></button>
+            <button @click="user ? view = 'add' : view = 'auth'" :class="{active: view === 'add'}" class="nav-item flex flex-col items-center gap-1"><span class="text-2xl">➕</span><span class="text-[9px] font-black uppercase tracking-widest">Продать</span></button>
+            <button @click="user ? (view = 'profile' || view === 'admin') : view = 'auth'" :class="{active: view === 'profile' || view === 'admin'}" class="nav-item flex flex-col items-center gap-1"><span class="text-2xl">👤</span><span class="text-[9px] font-black uppercase tracking-widest">Профиль</span></button>
         </nav>
     </div>
 </div>
@@ -292,8 +259,7 @@ const { createApp } = Vue;
 
 const SUPABASE_URL = 'https://gcxnstwsqkmdotqblkfd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjeG5zdHdzcWttZG90cWJsa2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MDI3MzIsImV4cCI6MjA4MjM3ODczMn0.79gdNrKNRcdPTbban-6uK3GP5Czyq-II7kRHaRyfvqE';
-
-const MASTER_ADMIN_ID = 1735153058; // ТВОЙ ID
+const MASTER_ADMIN_ID = 1735153058; 
 const BOT_TOKEN = '7688454041:AAFFBc0Ye7RRq0RFuSst_QfTqQ0TpQu9aWI';
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -301,16 +267,16 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 createApp({
     data() {
         return {
-            theme: 'dark', ageVerified: localStorage.getItem('vb_age_v27') === 'true',
-            loading: true, view: 'home', profileTab: 'my', activeImg: null,
+            loading: true, view: 'home', profileTab: 'my', activeImg: null, publishing: false, strikeNoticeClosed: false,
             user: JSON.parse(localStorage.getItem('vb_cloud_v27')) || null,
             favorites: JSON.parse(localStorage.getItem('vb_favs_v27')) || [],
             items: [], dbUsers: [], categories: ['Все', 'Поды', 'Моды', 'Жидкости', 'Запчасти', 'Расходники'],
             filters: { cat: 'Все' }, searchQuery: '', sortBy: 'new',
+            ageVerified: localStorage.getItem('vb_age_v27') === 'true',
             auth: { name: '' }, authStep: 'input', verifyCode: '',
             newItem: { title: '', category: 'Поды', price: null, city: '', desc_text: '', tg_user: '', img: '', img2: '', img3: '' },
             selectedItem: null, contactRevealed: false, editingProfile: false, editName: '', toasts: [],
-            publishing: false, MASTER_ADMIN_ID: MASTER_ADMIN_ID
+            LOGO_URL: 'https://i.postimg.cc/mD8370vC/walter.jpg', MASTER_ADMIN_ID: MASTER_ADMIN_ID
         }
     },
     computed: {
@@ -319,8 +285,8 @@ createApp({
         sortedItems() {
             let filtered = this.items.filter(i => {
                 const matchCat = this.filters.cat === 'Все' || i.category === this.filters.cat;
-                const q = this.searchQuery.toLowerCase();
-                return matchCat && (i.title.toLowerCase().includes(q) || i.city.toLowerCase().includes(q));
+                const matchSearch = i.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || i.city.toLowerCase().includes(this.searchQuery.toLowerCase());
+                return matchCat && matchSearch;
             });
             if (this.sortBy === 'cheap') return filtered.sort((a, b) => a.price - b.price);
             if (this.sortBy === 'expensive') return filtered.sort((a, b) => b.price - a.price);
@@ -330,19 +296,14 @@ createApp({
         favoriteItems() { return this.items.filter(i => this.favorites.includes(i.id)); }
     },
     async mounted() {
-        if (this.ageVerified) await this.initApp();
-        else this.loading = false;
+        if (this.ageVerified) await this.initApp(); else this.loading = false;
         if (this.user) this.editName = this.user.name;
         client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => this.fetchData()).subscribe();
         client.channel('any_users').on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => this.fetchData()).subscribe();
     },
     methods: {
         async initApp() { this.loading = true; await this.fetchData(); this.loading = false; },
-        notify(msg) {
-            const id = Date.now();
-            this.toasts.push({ id, msg });
-            setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 3000);
-        },
+        notify(msg) { const id = Date.now(); this.toasts.push({ id, msg }); setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 3500); },
         async verifyAge() { this.ageVerified = true; localStorage.setItem('vb_age_v27', 'true'); await this.initApp(); },
         async fetchData() {
             const { data: items } = await client.from('items').select('*').order('id', { ascending: false });
@@ -352,22 +313,22 @@ createApp({
                 const updated = this.dbUsers.find(u => u.tg_id == this.user.tg_id);
                 if (updated) { 
                     this.user = updated; 
-                    if (this.isCreator && updated.strikes > 0) await client.from('users').update({ strikes: 0 }).eq('tg_id', MASTER_ADMIN_ID);
+                    if (this.isCreator && updated.strikes > 0) await client.from('users').update({ strikes: 0, strike_reason: '' }).eq('tg_id', MASTER_ADMIN_ID);
                     localStorage.setItem('vb_cloud_v27', JSON.stringify(this.user)); 
+                    if (updated.is_banned) { this.logout(); this.notify('Доступ заблокирован ❌'); }
                 }
             }
         },
         toggleFavorite(id) {
             const idx = this.favorites.indexOf(id);
-            if (idx > -1) this.favorites.splice(idx, 1);
-            else this.favorites.push(id);
+            if (idx > -1) this.favorites.splice(idx, 1); else this.favorites.push(id);
             localStorage.setItem('vb_favs_v27', JSON.stringify(this.favorites));
-            this.notify(idx > -1 ? 'Удалено' : 'В избранном ❤️');
+            this.notify(idx > -1 ? 'Удалено' : 'Добавлено ❤️');
         },
         isFavorite(id) { return this.favorites.includes(id); },
         async updateProfile() {
             await client.from('users').update({ name: this.editName }).eq('id', this.user.id);
-            this.editingProfile = false; this.notify('Ник обновлен! ✨'); await this.fetchData();
+            this.editingProfile = false; this.notify('Ник изменен! ✨'); await this.fetchData();
         },
         async startAuth() {
             this.verifyCode = Math.floor(1000 + Math.random() * 9000).toString(); this.authStep = 'telegram';
@@ -391,23 +352,20 @@ createApp({
         async handleAvatarUpload(e) {
             const reader = new FileReader();
             reader.onload = async (f) => {
-                const compressed = await this.compressImage(f.target.result, 400);
-                await client.from('users').update({ avatar: compressed }).eq('id', this.user.id);
-                this.user.avatar = compressed;
-                localStorage.setItem('vb_cloud_v27', JSON.stringify(this.user));
+                const comp = await this.compressImage(f.target.result, 400);
+                await client.from('users').update({ avatar: comp }).eq('id', this.user.id);
+                this.user.avatar = comp; localStorage.setItem('vb_cloud_v27', JSON.stringify(this.user));
                 this.notify('Обновлено!'); await this.fetchData();
             };
             reader.readAsDataURL(e.target.files[0]);
         },
-        compressImage(base64, maxWidth) {
+        compressImage(b64, mw) {
             return new Promise((resolve) => {
-                const img = new Image(); img.src = base64;
+                const img = new Image(); img.src = b64;
                 img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const scale = maxWidth / img.width;
-                    canvas.width = maxWidth; canvas.height = img.height * scale;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const canvas = document.createElement('canvas'); const scale = mw / img.width;
+                    canvas.width = mw; canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
             });
@@ -417,18 +375,22 @@ createApp({
         async handleFileUpload(e, n) {
             const reader = new FileReader();
             reader.onload = async (f) => {
-                const compressed = await this.compressImage(f.target.result, 800);
-                if(n === 1) this.newItem.img = compressed;
-                if(n === 2) this.newItem.img2 = compressed;
-                if(n === 3) this.newItem.img3 = compressed;
+                const comp = await this.compressImage(f.target.result, 800);
+                if(n === 1) this.newItem.img = comp; if(n === 2) this.newItem.img2 = comp; if(n === 3) this.newItem.img3 = comp;
             };
             reader.readAsDataURL(e.target.files[0]);
         },
         async createListing() {
             if (!this.newItem.img || !this.newItem.title) return this.notify('Заполни поля!');
             this.publishing = true;
-            await client.from('items').insert([{ ...this.newItem, user_id: this.user.id, seller_name: this.user.name }]);
+            const { error } = await client.from('items').insert([{
+                title: this.newItem.title, category: this.newItem.category, price: this.newItem.price,
+                city: this.newItem.city, desc_text: this.newItem.desc_text, tg_user: this.newItem.tg_user,
+                img: this.newItem.img, img2: this.newItem.img2, img3: this.newItem.img3,
+                user_id: this.user.id, seller_name: this.user.name
+            }]);
             this.publishing = false;
+            if (error) return this.notify('Ошибка базы!');
             this.view = 'home'; this.newItem = { title: '', category: 'Поды', price: null, city: '', desc_text: '', tg_user: '', img: '', img2: '', img3: '' };
             this.notify('Лот опубликован! 🚀');
         },
