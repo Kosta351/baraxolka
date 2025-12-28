@@ -72,7 +72,7 @@
         <div class="glass p-12 rounded-[4rem] max-w-sm w-full border-[#00ffaa22] animate__animated animate__zoomIn">
             <div class="w-20 h-20 bg-[#00ffaa] rounded-[2.5rem] mx-auto mb-8 flex items-center justify-center text-black text-4xl font-black italic">B</div>
             <h1 class="font-brand text-2xl mb-4 uppercase italic">Bazar Pro</h1>
-            <button @click="verifyAge" class="btn-prime w-full py-6 text-[11px] uppercase tracking-widest">Да, войти</button>
+            <button @click="verifyAge" class="btn-prime w-full py-6 text-[11px] uppercase tracking-widest">Мне есть 18 лет</button>
         </div>
     </div>
 
@@ -179,32 +179,53 @@
                     </div>
                 </div>
 
-                <!-- АДМИН ПАНЕЛЬ (КНОПКИ ВЫДАЧИ РАНГОВ ВЕРНУЛИСЬ) -->
+                <!-- АДМИН ПАНЕЛЬ -->
                 <div v-else-if="view === 'admin' && isAdmin" key="admin" class="space-y-6">
                     <div class="flex justify-between items-center"><h2 class="font-brand text-xl text-[#ff3366] italic uppercase leading-none">Control Panel</h2><button @click="view = 'profile'" class="glass px-4 py-2 rounded-xl text-[8px] uppercase">Назад</button></div>
                     
-                    <div :class="settings.is_maintenance ? 'border-red-500 bg-red-500/5' : 'border-white/5'" class="glass p-6 rounded-[2.5rem] border flex items-center justify-between">
-                        <h3 class="text-[10px] font-black uppercase">Тех. Работы</h3>
-                        <button @click="toggleMaintenance" :class="settings.is_maintenance ? 'bg-red-500' : 'bg-white/10'" class="w-14 h-8 rounded-full relative p-1 transition-all"><div :class="settings.is_maintenance ? 'translate-x-6' : 'translate-x-0'" class="w-6 h-6 bg-white rounded-full transition-transform"></div></button>
+                    <!-- ВКЛАДКИ АДМИНКИ -->
+                    <div class="flex gap-2 p-1 glass rounded-2xl">
+                        <button @click="adminTab = 'users'" :class="adminTab === 'users' ? 'bg-white/10 text-blue-400' : 'opacity-40'" class="flex-1 py-3 rounded-xl text-[9px] font-black uppercase">Юзеры</button>
+                        <button @click="adminTab = 'items'" :class="adminTab === 'items' ? 'bg-white/10 text-blue-400' : 'opacity-40'" class="flex-1 py-3 rounded-xl text-[9px] font-black uppercase">Лоты</button>
                     </div>
 
-                    <div v-for="u in dbUsers" :key="u.id" class="glass p-5 rounded-[2.5rem] block mb-3">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <img :src="u.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.name}`" class="w-10 h-10 rounded-xl object-cover">
-                                <div><div class="text-[10px] font-black uppercase leading-none mb-1">{{u.name}}</div><div :class="'rank-'+u.rank" class="text-[7px] font-bold uppercase">{{getRankName(u)}}</div></div>
+                    <div v-if="adminTab === 'users'">
+                        <div :class="settings.is_maintenance ? 'border-red-500 bg-red-500/5' : 'border-white/5'" class="glass p-6 rounded-[2.5rem] border flex items-center justify-between mb-6">
+                            <h3 class="text-[10px] font-black uppercase">Тех. Работы</h3>
+                            <button @click="toggleMaintenance" :class="settings.is_maintenance ? 'bg-red-500' : 'bg-white/10'" class="w-14 h-8 rounded-full relative p-1 transition-all"><div :class="settings.is_maintenance ? 'translate-x-6' : 'translate-x-0'" class="w-6 h-6 bg-white rounded-full transition-transform"></div></button>
+                        </div>
+
+                        <div v-for="u in dbUsers" :key="u.id" class="glass p-5 rounded-[2.5rem] block mb-3">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <img :src="u.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.name}`" class="w-10 h-10 rounded-xl object-cover">
+                                    <div><div class="text-[10px] font-black uppercase leading-none mb-1">{{u.name}}</div><div :class="'rank-'+u.rank" class="text-[7px] font-bold uppercase">{{getRankName(u)}}</div></div>
+                                </div>
+                                <div class="flex gap-1" v-if="u.tg_id != MASTER_ADMIN_ID">
+                                    <button @click="giveStrike(u)" class="w-8 h-8 glass rounded-lg text-xs">⚠️</button>
+                                    <button @click="banUser(u)" class="w-8 h-8 glass rounded-lg text-xs text-red-500">🚫</button>
+                                </div>
                             </div>
-                            <div class="flex gap-1" v-if="u.tg_id != MASTER_ADMIN_ID">
-                                <button @click="giveStrike(u)" class="w-8 h-8 glass rounded-lg text-xs">⚠️</button>
-                                <button @click="banUser(u)" class="w-8 h-8 glass rounded-lg text-xs text-red-500">🚫</button>
+                            <div v-if="u.tg_id != MASTER_ADMIN_ID" class="grid grid-cols-3 gap-2 pt-4 border-t border-white/5">
+                                <button @click="changeRank(u, 0)" class="py-2 glass rounded-lg text-[7px] uppercase font-black">Юзер</button>
+                                <button @click="changeRank(u, 1)" class="py-2 glass rounded-lg text-[7px] uppercase font-black text-blue-400">Админ</button>
+                                <button @click="changeRank(u, 2)" class="py-2 glass rounded-lg text-[7px] uppercase font-black text-purple-400">Старший</button>
                             </div>
                         </div>
-                        
-                        <!-- ВОТ ЭТИ КНОПКИ ДЛЯ ВЫДАЧИ АДМИНКИ -->
-                        <div v-if="u.tg_id != MASTER_ADMIN_ID" class="grid grid-cols-3 gap-2 pt-4 border-t border-white/5">
-                            <button @click="changeRank(u, 0)" class="py-2 glass rounded-lg text-[7px] uppercase font-black">Юзер</button>
-                            <button @click="changeRank(u, 1)" class="py-2 glass rounded-lg text-[7px] uppercase font-black text-blue-400">Админ</button>
-                            <button @click="changeRank(u, 2)" class="py-2 glass rounded-lg text-[7px] uppercase font-black text-purple-400">Старший</button>
+                    </div>
+
+                    <!-- МОДЕРАЦИЯ ВСЕХ ЛОТОВ (Rank 2 и Rank 3) -->
+                    <div v-else-if="adminTab === 'items'" class="space-y-3">
+                        <div v-if="user.rank < 2 && Number(user.tg_id) !== Number(MASTER_ADMIN_ID)" class="text-center py-10 opacity-40 text-xs">Доступно только Старшим админам</div>
+                        <div v-else v-for="item in items" :key="item.id" class="glass p-4 rounded-3xl flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <img :src="item.img" class="w-12 h-12 rounded-xl object-cover">
+                                <div>
+                                    <div class="text-[9px] font-black uppercase truncate max-w-[150px]">{{item.title}}</div>
+                                    <div class="text-[7px] opacity-40 uppercase">Продавец: {{item.seller_name}}</div>
+                                </div>
+                            </div>
+                            <button @click="deleteItem(item.id)" class="text-red-500 glass p-2 rounded-xl">Удалить</button>
                         </div>
                     </div>
                 </div>
@@ -311,7 +332,7 @@ createApp({
         async createListing() { this.publishing = true; await client.from('items').insert([{ ...this.newItem, user_id: this.user.id, seller_name: this.user.name, status: 'active' }]); setTimeout(async () => { this.publishing = false; this.view = 'home'; this.newItem = { title: '', category: 'Поды', price: null, city: '', desc_text: '', tg_user: '', img: '', img2: '', img3: '' }; await this.fetchData(); }, 800); },
         async toggleFavorite(id) { if (!this.user) return this.view = 'auth'; let f = [...(this.user.favorites || [])]; f = f.includes(id) ? f.filter(x => x !== id) : [...f, id]; await client.from('users').update({ favorites: f }).eq('id', this.user.id); this.user.favorites = f; },
         isFavorite(id) { return this.user?.favorites?.includes(id); },
-        async deleteItem(id) { if (confirm("Удалить?")) { await client.from('items').delete().eq('id', id); await this.fetchData(); } },
+        async deleteItem(id) { if (confirm("Удалить этот лот навсегда?")) { await client.from('items').delete().eq('id', id); await this.fetchData(); } },
         async toggleSold(item) { await client.from('items').update({ status: item.status === 'sold' ? 'active' : 'sold' }).eq('id', item.id); await this.fetchData(); },
         triggerFile(n) { this.$refs['file'+n][0].click() },
         getNewImg(n) { return n === 1 ? this.newItem.img : n === 2 ? this.newItem.img2 : this.newItem.img3; },
