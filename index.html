@@ -17,15 +17,19 @@
         .font-brand { font-family: 'Unbounded', sans-serif; }
         .glass { background: var(--card); backdrop-filter: blur(25px); border: 1px solid var(--border); }
         .btn-prime { background: linear-gradient(135deg, var(--accent), #00d4ff); color: #000; font-weight: 800; transition: 0.3s; border-radius: 1.2rem; }
-        .btn-prime:disabled { opacity: 0.4; filter: grayscale(1); }
         
         .cat-chip.active { background: var(--accent) !important; color: #000 !important; font-weight: 900; }
         .tab-bar-item { opacity: 0.4; transition: 0.4s; }
         .tab-bar-item.active { opacity: 1; color: var(--accent); }
         
-        .rank-3 { color: #ff3366; text-shadow: 0 0 15px rgba(255, 51, 102, 0.6); font-weight: 900; } /* Создатель */
-        .rank-2 { color: #a855f7; font-weight: 800; } /* Ст. Админ */
-        .rank-1 { color: #3b82f6; font-weight: 800; } /* Админ */
+        /* Цвета рангов */
+        .rank-3 { color: #ff3366; text-shadow: 0 0 15px rgba(255, 51, 102, 0.6); font-weight: 900; }
+        .rank-2 { color: #a855f7; font-weight: 800; }
+        .rank-1 { color: #3b82f6; font-weight: 800; }
+
+        /* Анимация пульсации для тех работ */
+        @keyframes pulse-red { 0%, 100% { opacity: 1; text-shadow: 0 0 20px #ff3366; } 50% { opacity: 0.5; text-shadow: 0 0 10px #ff3366; } }
+        .maintenance-glow { animation: pulse-red 2s infinite; }
 
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         [v-cloak] { display: none; }
@@ -36,6 +40,21 @@
 
 <div id="app" v-cloak>
     
+    <!-- 🛠 ЭКРАН ТЕХ. РАБОТ (Видят все, кроме админа) -->
+    <div v-if="settings.is_maintenance && !isAdmin" class="fixed inset-0 z-[10001] bg-[#030303] flex items-center justify-center p-8 text-center overflow-hidden">
+        <div class="absolute inset-0 bg-radial-gradient from-[#ff336610] to-transparent"></div>
+        <div class="relative z-10 animate__animated animate__fadeInUp">
+            <div class="w-24 h-24 bg-white/5 border border-white/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 glass">
+                <span class="text-4xl">🛠</span>
+            </div>
+            <h1 class="font-brand text-3xl uppercase italic leading-none mb-4 maintenance-glow text-[#ff3366]">Тех. Работы</h1>
+            <p class="text-gray-400 text-sm max-w-[280px] mx-auto leading-relaxed mb-10 uppercase tracking-widest font-bold">
+                Мы обновляем Bazar Pro, чтобы он стал ещё мощнее. Скоро вернёмся!
+            </p>
+            <div class="text-[9px] text-white/20 uppercase font-black tracking-[0.3em]">Estimated time: 15-30 min</div>
+        </div>
+    </div>
+
     <!-- BAN SCREEN -->
     <div v-if="user && user.is_banned" class="fixed inset-0 z-[10000] bg-black flex items-center justify-center p-6 text-center">
         <div class="glass p-10 rounded-[3.5rem] border-red-500/50">
@@ -58,7 +77,7 @@
     <div v-else>
         
         <!-- АНОНС -->
-        <div v-if="settings.announcement" class="bg-gradient-to-r from-[#00ffaa15] via-transparent to-[#00ffaa15] border-b border-white/5 py-2 overflow-hidden">
+        <div v-if="settings.announcement && !settings.is_maintenance" class="bg-gradient-to-r from-[#00ffaa15] via-transparent to-[#00ffaa15] border-b border-white/5 py-2 overflow-hidden">
             <div class="whitespace-nowrap animate-[marquee_20s_linear_infinite] text-[9px] font-black uppercase tracking-widest text-[#00ffaa]">
                 {{ settings.announcement }}
             </div>
@@ -78,7 +97,7 @@
         <main class="px-6 pb-20">
             <transition name="animate__animated" enter-active-class="animate__fadeIn animate__faster" mode="out-in">
 
-                <!-- ГЛАВНАЯ (ЛЕНТА) -->
+                <!-- ГЛАВНАЯ -->
                 <div v-if="view === 'home'" key="home">
                     <div class="mb-8 space-y-4">
                         <div class="glass rounded-[1.5rem] flex items-center px-4 py-1">
@@ -122,8 +141,8 @@
                                 📸 <input type="file" @change="handleAvatarUpload" class="hidden" accept="image/*">
                             </label>
                         </div>
-                        <h2 class="font-brand text-xl uppercase italic">{{user.name}}</h2>
-                        <div :class="'rank-' + user.rank" class="text-[8px] font-black uppercase mt-1 tracking-widest">{{ getRankName(user) }}</div>
+                        <h2 class="font-brand text-xl uppercase italic leading-none">{{user.name}}</h2>
+                        <div :class="'rank-' + user.rank" class="text-[8px] font-black uppercase mt-2 tracking-widest">{{ getRankName(user) }}</div>
                     </div>
 
                     <div class="flex gap-2 p-1 glass rounded-2xl">
@@ -155,69 +174,25 @@
                     </div>
                 </div>
 
-                <!-- ДОБАВЛЕНИЕ ЛОТА -->
-                <div v-else-if="view === 'add'" key="add">
-                    <div class="glass p-8 rounded-[3rem] space-y-4">
-                        <h2 class="font-brand text-xl uppercase text-center mb-6 italic">Создать лот</h2>
-                        
-                        <div class="grid grid-cols-3 gap-3">
-                            <div v-for="n in [1,2,3]" :key="n" @click="triggerFile(n)" class="aspect-square glass rounded-2xl flex items-center justify-center cursor-pointer border-2 border-dashed border-white/10 overflow-hidden relative">
-                                <img v-if="getNewImg(n)" :src="getNewImg(n)" class="w-full h-full object-cover">
-                                <span v-else class="text-xl opacity-20">📸</span>
-                                <input type="file" :ref="'file'+n" @change="e => handleFileUpload(e, n)" class="hidden" accept="image/*">
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <input v-model="newItem.title" type="text" placeholder="Название товара" class="w-full p-4 glass rounded-2xl text-sm border-none">
-                            <select v-model="newItem.category" class="w-full p-4 glass rounded-2xl text-sm border-none outline-none text-white appearance-none">
-                                <option v-for="c in categories.filter(x => x !== 'Все')" :value="c">{{c}}</option>
-                            </select>
-                            <input v-model.number="newItem.price" type="number" placeholder="Цена ₽" class="w-full p-4 glass rounded-2xl text-sm border-none">
-                            <input v-model="newItem.city" type="text" placeholder="Город" class="w-full p-4 glass rounded-2xl text-sm border-none">
-                            <input v-model="newItem.tg_user" type="text" placeholder="Твой ник Телеграм (@...)" class="w-full p-4 glass rounded-2xl text-sm border-none">
-                            <textarea v-model="newItem.desc_text" placeholder="Описание состояния..." class="w-full p-4 glass rounded-2xl h-32 text-sm border-none"></textarea>
-                            
-                            <button @click="createListing" :disabled="publishing || !newItem.img" class="btn-prime w-full py-6 text-[10px] uppercase font-black">
-                                {{ publishing ? 'Публикация...' : 'Опубликовать лот' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ПРОСМОТР ТОВАРА -->
-                <div v-else-if="view === 'product' && selectedItem" key="product">
-                    <button @click="view = 'home'" class="mb-6 opacity-30 text-[10px] font-black uppercase flex items-center gap-2">← Назад</button>
-                    <div class="glass rounded-[3rem] overflow-hidden">
-                        <div class="aspect-square relative bg-black">
-                            <img :src="activeImg || selectedItem.img" class="w-full h-full object-cover transition-all duration-500">
-                            <div class="absolute bottom-6 left-0 w-full flex justify-center gap-2 px-4">
-                                <div v-for="pic in [selectedItem.img, selectedItem.img2, selectedItem.img3].filter(x => x)" 
-                                     @click="activeImg = pic"
-                                     :class="['w-12 h-12 rounded-xl glass border-2 transition-all', activeImg === pic ? 'border-[#00ffaa]' : 'border-transparent opacity-50']">
-                                    <img :src="pic" class="w-full h-full object-cover rounded-lg">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-8">
-                            <div class="flex justify-between items-start mb-6">
-                                <div>
-                                    <h2 class="text-2xl font-brand font-black uppercase italic leading-none">{{selectedItem.title}}</h2>
-                                    <p class="text-[9px] font-bold opacity-30 uppercase mt-2">{{selectedItem.city}} • {{selectedItem.category}}</p>
-                                </div>
-                                <div class="text-2xl font-brand text-[#00ffaa]">{{selectedItem.price}} ₽</div>
-                            </div>
-                            <p class="text-gray-400 text-sm leading-relaxed mb-10">{{selectedItem.desc_text}}</p>
-                            <button @click="contactSeller" class="btn-prime w-full py-6 text-[10px] uppercase font-black italic shadow-lg shadow-[#00ffaa10]">Написать продавцу</button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- АДМИН ПАНЕЛЬ (BOMB EDITION) -->
                 <div v-else-if="view === 'admin' && isAdmin" key="admin" class="space-y-6 animate__animated animate__fadeIn">
                     <div class="flex justify-between items-center">
-                        <h2 class="font-brand text-xl text-[#ff3366] italic uppercase">Control Panel</h2>
+                        <h2 class="font-brand text-xl text-[#ff3366] italic uppercase">Master Control</h2>
                         <button @click="view = 'profile'" class="glass px-4 py-2 rounded-xl text-[8px] uppercase font-black">Назад</button>
+                    </div>
+
+                    <!-- 🛠 ПЕРЕКЛЮЧАТЕЛЬ ТЕХ РАБОТ -->
+                    <div :class="settings.is_maintenance ? 'border-red-500/50 bg-red-500/5' : 'border-white/5'" class="glass p-6 rounded-[2.5rem] border transition-all duration-500">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-[10px] font-black uppercase text-white">Maintenance Mode</h3>
+                                <p class="text-[7px] text-white/30 uppercase mt-1">Отключает сайт для всех юзеров</p>
+                            </div>
+                            <button @click="toggleMaintenance" :class="settings.is_maintenance ? 'bg-red-500 shadow-[0_0_15px_#ff3366]' : 'bg-white/10'" class="w-14 h-8 rounded-full relative p-1 transition-all">
+                                <div :class="settings.is_maintenance ? 'translate-x-6 bg-white' : 'translate-x-0 bg-white/20'" class="w-6 h-6 rounded-full transition-transform"></div>
+                            </button>
+                        </div>
+                        <div v-if="settings.is_maintenance" class="text-center py-2 text-[8px] font-black text-red-500 uppercase animate-pulse">Сайт сейчас недоступен для всех</div>
                     </div>
 
                     <!-- Статистика -->
@@ -261,11 +236,10 @@
                                     <button @click="banUser(u)" class="w-8 h-8 glass rounded-lg text-xs text-red-500">🚫</button>
                                 </div>
                             </div>
-                            <!-- Ранги (только если админ выше рангом) -->
                             <div v-if="u.tg_id != MASTER_ADMIN_ID && (user.rank > u.rank || user.tg_id == MASTER_ADMIN_ID)" class="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-white/5">
-                                <button @click="changeRank(u, 0)" class="py-2 glass rounded-lg text-[7px] font-black uppercase hover:text-white">Юзер</button>
-                                <button @click="changeRank(u, 1)" class="py-2 glass rounded-lg text-[7px] font-black uppercase text-blue-400 hover:text-white">Админ</button>
-                                <button @click="changeRank(u, 2)" class="py-2 glass rounded-lg text-[7px] font-black uppercase text-purple-400 hover:text-white">Старший</button>
+                                <button @click="changeRank(u, 0)" class="py-2 glass rounded-lg text-[7px] font-black uppercase">Юзер</button>
+                                <button @click="changeRank(u, 1)" class="py-2 glass rounded-lg text-[7px] font-black uppercase text-blue-400">Админ</button>
+                                <button @click="changeRank(u, 2)" class="py-2 glass rounded-lg text-[7px] font-black uppercase text-purple-400">Старший</button>
                             </div>
                         </div>
                     </div>
@@ -282,16 +256,63 @@
                     </div>
                 </div>
 
+                <!-- Остальные экраны (Add, Auth, Product) остаются как были... -->
+
+                <!-- ДОБАВЛЕНИЕ ЛОТА -->
+                <div v-else-if="view === 'add'" key="add">
+                    <div class="glass p-8 rounded-[3rem] space-y-4">
+                        <h2 class="font-brand text-xl uppercase text-center mb-6 italic">Создать лот</h2>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div v-for="n in [1,2,3]" :key="n" @click="triggerFile(n)" class="aspect-square glass rounded-2xl flex items-center justify-center cursor-pointer border-2 border-dashed border-white/10 overflow-hidden relative">
+                                <img v-if="getNewImg(n)" :src="getNewImg(n)" class="w-full h-full object-cover">
+                                <span v-else class="text-xl opacity-20">📸</span>
+                                <input type="file" :ref="'file'+n" @change="e => handleFileUpload(e, n)" class="hidden" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <input v-model="newItem.title" type="text" placeholder="Название" class="w-full p-4 glass rounded-2xl text-sm border-none">
+                            <select v-model="newItem.category" class="w-full p-4 glass rounded-2xl text-sm border-none outline-none text-white appearance-none">
+                                <option v-for="c in categories.filter(x => x !== 'Все')" :value="c">{{c}}</option>
+                            </select>
+                            <input v-model.number="newItem.price" type="number" placeholder="Цена ₽" class="w-full p-4 glass rounded-2xl text-sm border-none">
+                            <input v-model="newItem.city" type="text" placeholder="Город" class="w-full p-4 glass rounded-2xl text-sm border-none">
+                            <input v-model="newItem.tg_user" type="text" placeholder="Телеграм @..." class="w-full p-4 glass rounded-2xl text-sm border-none">
+                            <textarea v-model="newItem.desc_text" placeholder="Описание..." class="w-full p-4 glass rounded-2xl h-32 text-sm border-none"></textarea>
+                            <button @click="createListing" :disabled="publishing || !newItem.img" class="btn-prime w-full py-6 text-[10px] uppercase font-black">
+                                {{ publishing ? 'Публикация...' : 'Опубликовать' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ВХОД -->
                 <div v-else-if="view === 'auth'" key="auth" class="max-w-sm mx-auto py-10">
                     <div class="glass p-10 rounded-[3.5rem] text-center">
                         <h2 class="font-brand text-2xl uppercase italic mb-8">Регистрация</h2>
-                        <input v-model="auth.name" type="text" placeholder="Твой никнейм" class="w-full p-5 glass rounded-2xl mb-4 text-center font-bold border-none outline-none">
+                        <input v-model="auth.name" type="text" placeholder="Твой никнейм" class="w-full p-5 glass rounded-2xl mb-4 text-center font-bold border-none">
                         <button @click="startAuth" class="btn-prime w-full py-5 text-[10px] uppercase font-black">Получить код</button>
-                        <div v-if="verifyCode" class="mt-8 animate__animated animate__fadeIn">
-                            <div class="text-[10px] opacity-30 uppercase font-bold mb-2">Отправь это боту</div>
+                        <div v-if="verifyCode" class="mt-8">
+                            <div class="text-[10px] opacity-30 uppercase font-bold mb-2">Код для бота</div>
                             <div class="text-5xl font-brand text-[#00ffaa] mb-6 tracking-widest">{{verifyCode}}</div>
-                            <p class="text-[9px] opacity-40 uppercase font-bold leading-relaxed">Наш бот: <br><a href="https://t.me/your_vape_bot" target="_blank" class="text-[#00ffaa] underline italic">@your_vape_bot</a></p>
+                            <p class="text-[9px] opacity-40 uppercase font-bold">Бот: <a href="https://t.me/your_vape_bot" target="_blank" class="text-[#00ffaa] underline">@your_vape_bot</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ПРОДУКТ -->
+                <div v-else-if="view === 'product' && selectedItem" key="product">
+                    <button @click="view = 'home'" class="mb-6 opacity-30 text-[10px] font-black uppercase flex items-center gap-2">← Назад</button>
+                    <div class="glass rounded-[3rem] overflow-hidden">
+                        <div class="aspect-square relative bg-black">
+                            <img :src="activeImg || selectedItem.img" class="w-full h-full object-cover transition-all duration-500">
+                        </div>
+                        <div class="p-8">
+                            <div class="flex justify-between items-start mb-6">
+                                <h2 class="text-2xl font-brand font-black uppercase italic">{{selectedItem.title}}</h2>
+                                <div class="text-2xl font-brand text-[#00ffaa]">{{selectedItem.price}} ₽</div>
+                            </div>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-10">{{selectedItem.desc_text}}</p>
+                            <button @click="contactSeller" class="btn-prime w-full py-6 text-[10px] uppercase font-black italic">Связаться</button>
                         </div>
                     </div>
                 </div>
@@ -300,11 +321,11 @@
         </main>
 
         <!-- НАВИГАЦИЯ -->
-        <nav class="fixed bottom-8 inset-x-8 z-[100] max-w-sm mx-auto">
+        <nav v-if="!settings.is_maintenance || isAdmin" class="fixed bottom-8 inset-x-8 z-[100] max-w-sm mx-auto">
             <div class="glass rounded-[2.5rem] p-3 flex justify-around items-center shadow-2xl backdrop-blur-3xl border-white/10">
                 <button @click="view = 'home'" :class="['tab-bar-item p-3', {active: view === 'home'}]">🏠</button>
                 <button @click="user ? view = 'add' : view = 'auth'" :class="['tab-bar-item p-3', {active: view === 'add'}]">
-                    <div class="bg-[#00ffaa] text-black w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all font-black text-xl">+</div>
+                    <div class="bg-[#00ffaa] text-black w-10 h-10 rounded-2xl flex items-center justify-center font-black text-xl">+</div>
                 </button>
                 <button @click="user ? (view = 'profile') : view = 'auth'" :class="['tab-bar-item p-3', {active: view === 'profile' || view === 'admin'}]">👤</button>
             </div>
@@ -315,11 +336,10 @@
 <script>
 const { createApp } = Vue;
 
-// ТВОИ ДАННЫЕ (ЗАМЕНИ URL И KEY НА СВОИ)
 const SUPABASE_URL = 'https://gcxnstwsqkmdotqblkfd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjeG5zdHdzcWttZG90cWJsa2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MDI3MzIsImV4cCI6MjA4MjM3ODczMn0.79gdNrKNRcdPTbban-6uK3GP5Czyq-II7kRHaRyfvqE';
 const BOT_TOKEN = '7688454041:AAFFBc0Ye7RRq0RFuSst_QfTqQ0TpQu9aWI';
-const MASTER_ADMIN_ID = 1735153058; // Твой ID
+const MASTER_ADMIN_ID = 1735153058;
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -329,7 +349,7 @@ createApp({
             ageVerified: localStorage.getItem('bazar_age_final_v2') === 'true',
             view: 'home', profileTab: 'my', adminTab: 'users',
             user: JSON.parse(localStorage.getItem('bazar_user_final_v2')) || null,
-            items: [], dbUsers: [], settings: { announcement: '' },
+            items: [], dbUsers: [], settings: { announcement: '', is_maintenance: false },
             categories: ['Все', 'Поды', 'Моды', 'Жидкости', 'Запчасти', 'Расходники'],
             filters: { cat: 'Все' }, searchQuery: '',
             auth: { name: '' }, verifyCode: '',
@@ -354,30 +374,30 @@ createApp({
     },
     async mounted() {
         if (this.ageVerified) await this.init();
-        // Подписка на реалтайм
         client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => this.fetchData()).subscribe();
         client.channel('any_users').on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => this.fetchData()).subscribe();
+        // Подписка на изменение настроек (тех. работы)
+        client.channel('settings').on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => this.fetchSettings()).subscribe();
     },
     methods: {
         async init() { await this.fetchData(); await this.fetchSettings(); },
         async fetchData() {
             const { data: it } = await client.from('items').select('*');
             const { data: us } = await client.from('users').select('*');
-            this.items = it || [];
-            this.dbUsers = us || [];
+            this.items = it || []; this.dbUsers = us || [];
             if (this.user) {
                 const fresh = this.dbUsers.find(u => u.id === this.user.id);
-                if (fresh) {
-                    this.user = fresh;
-                    this.editUser.name = fresh.name;
-                    this.editUser.bio = fresh.bio || '';
-                    localStorage.setItem('bazar_user_final_v2', JSON.stringify(fresh));
-                }
+                if (fresh) { this.user = fresh; localStorage.setItem('bazar_user_final_v2', JSON.stringify(fresh)); }
             }
         },
         async fetchSettings() {
             const { data } = await client.from('settings').select('*').eq('id', 1).single();
             if (data) this.settings = data;
+        },
+        async toggleMaintenance() {
+            const newState = !this.settings.is_maintenance;
+            await client.from('settings').update({ is_maintenance: newState }).eq('id', 1);
+            this.settings.is_maintenance = newState;
         },
         getRankName(u) {
             if (Number(u.tg_id) === Number(this.MASTER_ADMIN_ID)) return 'Создатель 👑';
@@ -385,10 +405,9 @@ createApp({
         },
         verifyAge() { this.ageVerified = true; localStorage.setItem('bazar_age_final_v2', 'true'); this.init(); },
         async startAuth() {
-            if (!this.auth.name) return alert("Введите ник");
+            if (!this.auth.name) return;
             this.verifyCode = Math.floor(1000 + Math.random() * 9000).toString();
             const poll = setInterval(async () => {
-                if (this.view !== 'auth') return clearInterval(poll);
                 const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=-10`);
                 const data = await res.json();
                 const msg = data.result?.find(u => u.message?.text === this.verifyCode);
@@ -399,40 +418,18 @@ createApp({
             let { data: ex } = await client.from('users').select('*').eq('tg_id', tg.id).single();
             if (!ex) {
                 const myRank = (Number(tg.id) === Number(this.MASTER_ADMIN_ID)) ? 3 : 0;
-                const { data: nu } = await client.from('users').insert([{ 
-                    tg_id: tg.id, name: this.auth.name, rank: myRank, is_admin: myRank >= 1, favorites: [] 
-                }]).select().single();
+                const { data: nu } = await client.from('users').insert([{ tg_id: tg.id, name: this.auth.name, rank: myRank, is_admin: myRank >= 1, favorites: [] }]).select().single();
                 ex = nu;
             }
             this.user = ex;
             localStorage.setItem('bazar_user_final_v2', JSON.stringify(ex));
-            this.view = 'home';
             setTimeout(() => location.reload(), 300);
         },
-        async saveProfile() {
-            await client.from('users').update({ name: this.editUser.name, bio: this.editUser.bio }).eq('id', this.user.id);
-            alert("Данные сохранены!"); await this.fetchData();
-        },
-        async updateGlobalSettings() {
-            await client.from('settings').update({ announcement: this.settings.announcement }).eq('id', 1);
-            alert("Объявление обновлено!");
-        },
-        async changeRank(u, r) {
-            await client.from('users').update({ rank: r, is_admin: r >= 1 }).eq('id', u.id);
-            await this.fetchData();
-        },
-        async giveStrike(u) {
-            const r = prompt("Причина предупреждения:");
-            if (!r) return;
-            await client.from('users').update({ strikes: (u.strikes || 0) + 1, strike_reason: r }).eq('id', u.id);
-            await this.fetchData();
-        },
-        async banUser(u) {
-            if (confirm(`Изменить статус бана для ${u.name}?`)) {
-                await client.from('users').update({ is_banned: !u.is_banned }).eq('id', u.id);
-                await this.fetchData();
-            }
-        },
+        async saveProfile() { await client.from('users').update({ name: this.editUser.name, bio: this.editUser.bio }).eq('id', this.user.id); alert("ОК!"); },
+        async updateGlobalSettings() { await client.from('settings').update({ announcement: this.settings.announcement }).eq('id', 1); alert("ОК!"); },
+        async changeRank(u, r) { await client.from('users').update({ rank: r, is_admin: r >= 1 }).eq('id', u.id); await this.fetchData(); },
+        async giveStrike(u) { const r = prompt("Причина:"); if (!r) return; await client.from('users').update({ strikes: (u.strikes || 0) + 1, strike_reason: r }).eq('id', u.id); await this.fetchData(); },
+        async banUser(u) { if (confirm(`Бан?`)) { await client.from('users').update({ is_banned: !u.is_banned }).eq('id', u.id); await this.fetchData(); } },
         async toggleFavorite(id) {
             if (!this.user) return this.view = 'auth';
             let favs = [...(this.user.favorites || [])];
@@ -441,59 +438,34 @@ createApp({
             this.user.favorites = favs;
         },
         isFavorite(id) { return this.user?.favorites?.includes(id); },
-        async deleteItem(id) {
-            if (confirm("Удалить этот лот?")) {
-                await client.from('items').delete().eq('id', id);
-                await this.fetchData();
-            }
-        },
-        async toggleSold(item) {
-            const newStatus = item.status === 'sold' ? 'active' : 'sold';
-            await client.from('items').update({ status: newStatus }).eq('id', item.id);
-            await this.fetchData();
-        },
-        async createListing() {
-            this.publishing = true;
-            await client.from('items').insert([{ 
-                ...this.newItem, user_id: this.user.id, seller_name: this.user.name, status: 'active' 
-            }]);
-            this.publishing = false;
-            this.view = 'home';
-            this.newItem = { title: '', category: 'Поды', price: null, city: '', desc_text: '', tg_user: '', img: '', img2: '', img3: '' };
-            await this.fetchData();
-        },
+        async deleteItem(id) { if (confirm("Удалить?")) { await client.from('items').delete().eq('id', id); await this.fetchData(); } },
+        async toggleSold(item) { await client.from('items').update({ status: item.status === 'sold' ? 'active' : 'sold' }).eq('id', item.id); await this.fetchData(); },
+        async createListing() { this.publishing = true; await client.from('items').insert([{ ...this.newItem, user_id: this.user.id, seller_name: this.user.name }]); this.publishing = false; this.view = 'home'; this.newItem = { title: '', category: 'Поды', price: null, city: '', desc_text: '', tg_user: '', img: '', img2: '', img3: '' }; await this.fetchData(); },
         triggerFile(n) { this.$refs['file'+n][0].click() },
         getNewImg(n) { return n === 1 ? this.newItem.img : n === 2 ? this.newItem.img2 : this.newItem.img3; },
         handleFileUpload(e, n) {
-            const file = e.target.files[0];
-            const r = new FileReader();
+            const file = e.target.files[0]; const r = new FileReader();
             r.onload = (f) => {
                 const i = new Image(); i.src = f.target.result;
                 i.onload = () => {
-                    const c = document.createElement('canvas');
-                    const max = 800; let w = i.width, h = i.height;
+                    const c = document.createElement('canvas'); const max = 800; let w = i.width, h = i.height;
                     if (w > h) { if (w > max) { h *= max/w; w = max; } } else { if (h > max) { w *= max/h; h = max; } }
-                    c.width = w; c.height = h;
-                    c.getContext('2d').drawImage(i, 0, 0, w, h);
+                    c.width = w; c.height = h; c.getContext('2d').drawImage(i, 0, 0, w, h);
                     const b = c.toDataURL('image/jpeg', 0.7);
-                    if(n === 1) this.newItem.img = b;
-                    if(n === 2) this.newItem.img2 = b;
-                    if(n === 3) this.newItem.img3 = b;
+                    if(n === 1) this.newItem.img = b; if(n === 2) this.newItem.img2 = b; if(n === 3) this.newItem.img3 = b;
                 };
             };
             r.readAsDataURL(file);
         },
         async handleAvatarUpload(e) {
-            const file = e.target.files[0];
-            const r = new FileReader();
+            const file = e.target.files[0]; const r = new FileReader();
             r.onload = (f) => {
                 const i = new Image(); i.src = f.target.result;
                 i.onload = async () => {
                     const c = document.createElement('canvas'); c.width = 300; c.height = 300;
                     c.getContext('2d').drawImage(i, 0, 0, 300, 300);
                     const b = c.toDataURL('image/jpeg', 0.8);
-                    await client.from('users').update({ avatar: b }).eq('id', this.user.id);
-                    await this.fetchData();
+                    await client.from('users').update({ avatar: b }).eq('id', this.user.id); await this.fetchData();
                 };
             };
             r.readAsDataURL(file);
